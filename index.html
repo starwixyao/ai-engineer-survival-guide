@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Harness 工程 · 从概率机器到可靠交付</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#E8E3D8;font-family:'Noto Sans SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif;color:#23211E;overflow:hidden}
+.mono{font-family:'JetBrains Mono','SF Mono',Consolas,monospace}
+#stage{position:absolute;top:50%;left:50%;width:1280px;height:720px;transform:translate(-50%,-50%);transform-origin:center center}
+.slide{position:absolute;inset:0;background:#F5F1E8;padding:44px 64px 58px;display:none;flex-direction:column;overflow:hidden}
+.slide.active{display:flex}
+#chrome-bottom{position:absolute;left:0;right:0;bottom:0;pointer-events:none}
+#pg{position:absolute;right:24px;bottom:14px;font-size:13px;color:#6E6A61;font-family:'JetBrains Mono',monospace}
+#deckname{position:absolute;left:24px;bottom:14px;font-size:12px;color:#A8A49C}
+#bar{position:absolute;left:0;bottom:0;height:4px;background:#D97757;transition:width .25s}
+.kicker{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#D97757;letter-spacing:.13em;margin-bottom:8px;font-weight:600}
+h1.tt{font-size:30px;font-weight:800;line-height:1.25;margin-bottom:12px}
+h1.tt .acc{color:#D97757}
+.sub{font-size:15px;color:#6E6A61;margin-bottom:14px;line-height:1.5}
+.small{font-size:13px;color:#6E6A61;line-height:1.5}
+.row{display:flex;gap:16px}
+.row>*{flex:1;min-width:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.mt{margin-top:14px}.mb{margin-bottom:12px}
+.card{background:#FFFFFF;border:1px solid #E3DDCF;border-radius:12px;padding:13px 17px}
+.card.gray{background:#EDE8DB}
+.card.acc{border-left:5px solid #D97757}
+.card.ok{border-left:5px solid #4A7C59}
+.card.warn{border-left:5px solid #C0452F}
+.card h3{font-size:15.5px;margin-bottom:7px}
+.card p,.card li{font-size:14px;line-height:1.5}
+ul.ls{list-style:none}
+ul.ls li{position:relative;padding-left:17px;margin-bottom:6px;font-size:14px;line-height:1.5}
+ul.ls li::before{content:'▸';position:absolute;left:0;color:#D97757;font-weight:700}
+ul.ls.okc li::before{content:'✓';color:#4A7C59}
+ul.ls.warnc li::before{content:'✗';color:#C0452F}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px;background:#fff;border-radius:10px;overflow:hidden}
+.t th{background:#E9E3D5;text-align:left;padding:7px 11px;font-size:13px;white-space:nowrap}
+.t td{border-bottom:1px solid #EEE9DC;padding:6px 11px;line-height:1.42;vertical-align:top}
+.t tr:last-child td{border-bottom:none}
+pre.term{background:#1F1E1E;color:#F5F1E8;border-radius:10px;padding:12px 17px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.55;white-space:pre-wrap}
+pre.term .c{color:#A8A49C}
+pre.term .o{color:#D97757}
+pre.term .g{color:#9CB88F}
+code.inl{background:#EDE8DB;border-radius:5px;padding:1px 6px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#B85C3E}
+.tag{display:inline-block;background:#D97757;color:#FFF8F2;border-radius:999px;padding:2px 11px;font-size:12px;font-weight:600;margin-right:6px}
+.tag.w{background:#C0452F}.tag.g{background:#4A7C59}.tag.n{background:#E9E3D5;color:#23211E}
+.pill{background:#EDE8DB;border-radius:8px;padding:7px 11px;font-size:13px}
+.flow{display:flex;align-items:stretch;gap:0}
+.fbox{background:#fff;border:1.5px solid #D97757;border-radius:10px;padding:9px 12px;text-align:center;font-size:13.5px;flex:1;display:flex;flex-direction:column;justify-content:center}
+.fbox b{font-size:14px}
+.fbox small{font-size:11.5px;color:#6E6A61}
+.farr{display:flex;align-items:center;padding:0 7px;color:#D97757;font-weight:800;font-size:17px}
+.chartbox{display:flex;align-items:flex-end;gap:16px;height:230px;padding:0 8px;border-bottom:2px solid #C9C2B2}
+.barwrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.bar{width:78%;background:#D97757;border-radius:5px 5px 0 0}
+.bar.g{background:#4A7C59}.bar.n{background:#8A8578}
+.barlabel{font-size:11.5px;color:#23211E;font-weight:600;text-align:center}
+.barval{font-size:12px;color:#6E6A61;margin-bottom:3px;font-family:'JetBrains Mono',monospace}
+.tl{display:flex;margin-top:8px}
+.tl .node{flex:1;position:relative;padding:0 8px}
+.tl .node::before{content:'';position:absolute;top:9px;left:0;right:0;height:3px;background:#E3DDCF}
+.tl .node:first-child::before{left:50%}
+.tl .node:last-child::before{right:50%}
+.tl .dot{position:relative;z-index:1;width:20px;height:20px;border-radius:50%;background:#D97757;border:4px solid #F5F1E8;outline:2.5px solid #D97757;margin:0 auto}
+.tl .yr{font-family:'JetBrains Mono',monospace;font-weight:700;color:#D97757;text-align:center;font-size:14px;margin-bottom:5px}
+.tl .tx{text-align:center;font-size:12.5px;line-height:1.45;margin-top:7px}
+.sec{justify-content:center}
+.sec .cn{font-family:'JetBrains Mono',monospace;font-size:92px;font-weight:800;color:#D97757;line-height:1}
+.sec h1{font-size:42px;font-weight:800;margin:8px 0 14px}
+.sec .qs{margin-top:8px;width:660px}
+.sec .qs .q{background:#fff;border:1px solid #E3DDCF;border-radius:12px;padding:11px 19px;margin-bottom:9px;font-size:15.5px;display:flex;align-items:center;gap:13px}
+.sec .qs .q .n{font-family:'JetBrains Mono',monospace;color:#D97757;font-weight:700;font-size:14px}
+.cover{justify-content:center}
+.cover .prompt{font-family:'JetBrains Mono',monospace;font-size:13.5px;color:#F5F1E8;background:#1F1E1E;border-radius:10px;padding:14px 22px;width:600px;margin-bottom:26px;line-height:1.7}
+.cover h1{font-size:56px;font-weight:800;line-height:1.15}
+.cover h1 .o{color:#D97757}
+.cover .meta{margin-top:22px;font-size:14.5px;color:#6E6A61;line-height:1.8}
+.pill2{display:flex;gap:10px}
+.bignum{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:800;color:#D97757;line-height:1.1}
+.half{display:flex;gap:16px;flex:1;min-height:0}
+.half>div{display:flex;flex-direction:column;gap:12px}
+.half>div>*:last-child{flex:1}
+/* 榜单条形 */
+.barrow{display:grid;grid-template-columns:168px 1fr 46px;gap:9px;align-items:center;height:19px}
+.barrow .lbl{font-size:12px;white-space:nowrap;overflow:hidden}
+.barrow .lbl .rk{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#A8A49C;display:inline-block;width:19px}
+.barrow .lbl .cfg{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#A8A49C;margin-left:4px}
+.barrow .track{position:relative;height:11px;background:#E9E3D5;border-radius:3px}
+.barrow .fill{position:absolute;left:0;top:0;bottom:0;background:#D97757;border-radius:3px}
+.barrow .ci{position:absolute;top:-1px;bottom:-1px;background:rgba(35,33,30,.28);border-radius:2px}
+.barrow .val{font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right;color:#23211E}
+.barrow.lo .fill{background:#8A8578}
+.barrow.lo .lbl{color:#57534A}
+.barrow.top .lbl{font-weight:700}
+.axis{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;color:#A8A49C;margin-top:4px;padding-left:177px;padding-right:52px}
+.note{font-size:12px;color:#A8A49C;margin-top:9px}
+.stat{display:flex;flex-direction:column;gap:8px}
+.step{display:flex;gap:9px;align-items:flex-start;margin-bottom:7px}
+.step .sn{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#D97757;font-weight:700;background:#EDE8DB;border-radius:6px;padding:1px 7px;margin-top:1px;white-space:nowrap}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- P1 封面 -->
+<section class="slide cover active">
+  <div class="prompt">~/your-repo $ ask-ai "给项目加一个缓存层"
+<span class="g">› 分析仓库中…(12 个文件) › 读取 src/cache › 运行 npm test
+› ✓ 修改 4 个文件，测试通过 42/42</span>
+$ ask-ai "再用 @acme/ultra-cache 优化一下"
+<span class="o">› ✗ 404 Not Found —— 这个包并不存在
+› 它刚才非常自信地"记得"它存在</span></div>
+  <h1>Harness <span class="o">工程</span></h1>
+  <h1 style="font-size:30px;font-weight:700;color:#4A4438;margin-top:12px">从"猜下一个词"到可靠交付<br>写给普通开发者的 AI 编程深度指南</h1>
+  <div class="meta">
+    概率本性 · 上下文与记忆 · 七顽疾与对策 · 评估与落地<br>
+    53 页 · 6 章 · 约 60 分钟 · 2026-11 · 榜单为 AA-3D 真实抓取数据
+  </div>
+</section>
+
+<!-- P2 导读+目录 -->
+<section class="slide">
+  <div class="kicker">READ ME</div>
+  <h1 class="tt">一张地图 + 三个你现在就能对号入座的问题</h1>
+  <div class="row" style="flex:1">
+    <div style="flex:1.05">
+      <div class="card acc mb"><h3>翻车对号</h3>
+        <ul class="ls warnc">
+          <li>它一本正经编了个不存在的 API——<b>为什么</b>（P7/P26）</li>
+          <li>榜单第一名和第三名，差距到底多大——<b>怎么读榜</b>（P10-P12）</li>
+          <li>同一模型换个档位，分数掉一截——<b>你用的到底是什么</b>（P12）</li>
+          <li>会话越长越不听话——<b>稀释的物理规律</b>（P8/P37）</li>
+        </ul></div>
+      <div class="card ok"><h3>带走三样东西</h3>
+        <ul class="ls okc">
+          <li>一张<b>问题→根源→对策→检验</b>的台账（七顽疾）</li>
+          <li>一份 2026-11 真实榜单：AA-3D Elo + Coding Agent Index</li>
+          <li>30/60/90 天落地路线 + 明天能用的 12 条速查</li>
+        </ul></div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1">
+        <div class="card acc"><h3><span class="mono acc">CH1</span> 大脑怎么想 <span class="small">P4-P13</span></h3><p>概率机器 · 采样 · 失忆 · 知识冻结 · AA-3D 榜单</p></div>
+        <div class="card acc"><h3><span class="mono acc">CH2</span> Vibe → Harness <span class="small">P14-P23</span></h3><p>人的角色退后 · Agent 四要素 · 马具六大件</p></div>
+        <div class="card warn"><h3><span class="mono" style="color:#C0452F">CH3</span> 七顽疾 × 对策 <span class="small">P24-P34</span></h3><p>幻觉/过期/漂移/失忆/越界/验证/成本 → 总表</p></div>
+        <div class="card acc"><h3><span class="mono acc">CH4</span> 上下文工程 <span class="small">P35-P40</span></h3><p>七块拼图 · 稀释 · 压缩四手段 · 三层装配</p></div>
+        <div class="card acc"><h3><span class="mono acc">CH5</span> 记忆与知识 <span class="small">P41-P47</span></h3><p>三层记忆 · 生命周期 · 知识库 · 七段管道</p></div>
+        <div class="card ok"><h3><span class="mono" style="color:#4A7C59">CH6</span> 评估与落地 <span class="small">P48-P52</span></h3><p>五组指标 · 30/60/90 · 反模式 · 速查 12 条</p></div>
+      </div>
+      <div class="card gray"><p class="small">阅读约定：<span class="tag w">红</span>问题 <span class="tag">橙</span>机制 <span class="tag g">绿</span>对策 · 页脚标注数据来源与抓取日 · 键盘 ←/→ 翻页，按 T 跳转目录</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- P3 CH1章节页 -->
+<section class="slide sec">
+  <div class="cn">01</div>
+  <h1>大脑怎么想：概率与榜单</h1>
+  <p class="sub" style="font-size:17px">先拆开它的脾气——后面所有对策都从这里推导</p>
+  <div class="qs">
+    <div class="q"><span class="n">Q1</span>它为什么一本正经地编 API？——概率机器的本性</div>
+    <div class="q"><span class="n">Q2</span>为什么榜单间距 ≠ 实力差距？——学会读 Elo</div>
+    <div class="q"><span class="n">Q3</span>同一个模型，为什么表现判若两模？——档位与 Harness</div>
+  </div>
+</section>
+
+<!-- P4 三块基石 -->
+<section class="slide">
+  <div class="kicker">CH1 · 大脑怎么想 1/9</div>
+  <h1 class="tt">先立三块基石：<span class="acc">Token / 上下文 / 参数</span>——被误用最多的三个词</h1>
+  <div class="grid3" style="flex:1">
+    <div class="card acc"><h3>Token · 最小积木</h3>
+      <p>模型读写的最小单位。英文 ≈0.7 词/token；中文 1 字 ≈1-2 token，取决于分词器。</p>
+      <pre class="term" style="margin-top:8px;font-size:11.5px">"Harness 工程"
+→ ["Har","ness"," 工","程"]</pre>
+      <p class="small mt"><b class="warnc">误解</b>：1 个字 = 1 个 token。<br><b>计费、窗口长度、输出速度都按 token 算。</b></p></div>
+    <div class="card acc"><h3>上下文 · 一次推理的视野</h3>
+      <p>每次请求模型"一次能看见"的全部内容上限。<b>不是记忆容量，是视野。</b></p>
+      <pre class="term" style="margin-top:8px;font-size:11.5px">第1轮 [系统+用户1]
+第2轮 [系统+用户1+助手1+用户2]
+第N轮 [……全部历史……]</pre>
+      <p class="small mt"><b class="warnc">误解</b>：它记得我们聊过的历史。<br>历史每轮<b>重新发送</b>：越长越贵、越易稀释。</p></div>
+    <div class="card acc"><h3>参数 · 冻结的倾向</h3>
+      <p>训练固化下来的上万亿个数字，决定"猜"的倾向。<b>训练结束时冻结 ❄，与你对话时不变。</b></p>
+      <p class="small mt"><b class="warnc">误解</b>："它从我这儿学到了"。<br>"它学到了"只发生在你的上下文里——这是理解"记忆"的钥匙（P42）。</p></div>
+  </div>
+  <p class="note">搞混这三个词，后面全乱：计费按 token，失忆按上下文，"学不会"按参数。</p>
+</section>
+
+<!-- P5 概率机器 -->
+<section class="slide">
+  <div class="kicker">CH1 · 大脑怎么想 2/9</div>
+  <h1 class="tt">它不是在"查答案"，是在<span class="acc">"续写"</span></h1>
+  <div class="half">
+    <div style="flex:1.1">
+      <div class="card acc mb"><h3>唯一任务：预测下一个 token</h3>
+        <pre class="term" style="font-size:12px">P(next token | context)
+前文 → logits → softmax 概率 → 采样 → 下一个 token
+再把新 token 拼回输入，再算一遍 —— 逐字滚动</pre>
+        <p class="small mt">没有数据库、没有索引，只有参数里凝结的统计规律。问它"这个 API 存在吗"，它给的是"像不像存在"，不是"存在"。</p></div>
+      <div class="grid2">
+        <div class="card"><h3>答案不是查到的</h3><p class="small">是<b>生成</b>的。"很有把握"不能当证据，只能当"值得去验一下"。</p></div>
+        <div class="card"><h3>目标是"像"不是"对"</h3><p class="small">训练优化的是似然，<b>流畅与正确是两套指标</b>。写过整个互联网的作文高手，照题感一路写。</p></div>
+      </div>
+      <div class="card gray mt"><h3>训练三部曲（能力与"性格"的来源）</h3>
+        <p class="small"><b>预训练</b>：海量语料学接龙 → <b>SFT</b>：学会按指令格式答 → <b>RLHF/RL</b>：对齐人类偏好。对齐奖励"给出有用回答"而非"承认不知道"——幻觉的助推器之一。</p></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card gray" style="height:100%"><h3>下一个 token 的概率分布</h3>
+        <div class="chartbox" style="height:250px;margin-top:12px">
+          <div class="barwrap"><div class="bar" style="height:84%"></div><div class="barval">0.42</div><div class="barlabel">将</div></div>
+          <div class="barwrap"><div class="bar" style="height:62%"></div><div class="barval">0.31</div><div class="barlabel">用于</div></div>
+          <div class="barwrap"><div class="bar" style="height:24%"></div><div class="barval">0.12</div><div class="barlabel">返回</div></div>
+          <div class="barwrap"><div class="bar" style="height:18%"></div><div class="barval">0.09</div><div class="barlabel">接受</div></div>
+          <div class="barwrap"><div class="bar n" style="height:4%"></div><div class="barval">…</div><div class="barlabel">约10万词表</div></div>
+        </div>
+        <p class="small mt">"函数 add 的作用是 ▮" ——每一步都在这样一张表上"分布"一次。你看到的每段回答都是这样逐字"滚"出来的。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- P6 采样 -->
+<section class="slide">
+  <div class="kicker">CH1 · 大脑怎么想 3/9</div>
+  <h1 class="tt">temperature 控制的是<span class="acc">胆量</span>，不是智商</h1>
+  <div class="row" style="flex:1">
+    <div style="flex:1.1">
+      <table class="t">
+        <tr><th>档位</th><th>行为</th><th>场景</th></tr>
+        <tr><td><code class="inl">T→0</code></td><td>几乎总选最高概率词（greedy），稳定可复现</td><td>写代码、抽取类任务</td></tr>
+        <tr><td><code class="inl">T=1</code></td><td>按原始分布抽签，自然、多样</td><td>对话、写作</td></tr>
+        <tr><td><code class="inl">T 很大</code></td><td>分布拉平，怪词也能中签，发散易跑题</td><td>头脑风暴</td></tr>
+        <tr><td><code class="inl">top-p</code></td><td>只从累计概率前 p 的候选里抽，砍掉长尾</td><td>与 T 二选一调</td></tr>
+      </table>
+      <div class="card warn mt"><h3>最关键的一条</h3>
+        <p><b>temperature = 0 ≠ 正确</b>，只等于"每次都选第一名"。如果模型把错误答案排在第一位，低温只会让它<b>更稳定地错</b>。</p></div>
+      <div class="card ok"><h3>工程结论</h3>
+        <p>同一提示两次输出不同是采样的正常行为，不是 bug。正确性靠<b>验证</b>，不靠温度——这是第 30 页"验证回路"的伏笔。</p></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card gray" style="height:100%"><h3>同一分布的三种胆量</h3>
+        <svg viewBox="0 0 420 250" style="width:100%;margin-top:6px">
+          <line x1="30" y1="220" x2="410" y2="220" stroke="#C9C2B2" stroke-width="2"/>
+          <text x="40" y="130" font-size="12" fill="#23211E" font-weight="bold">T=0.2</text>
+          <rect x="90" y="45" width="46" height="175" rx="4" fill="#D97757"/>
+          <text x="92" y="40" font-size="11" fill="#6E6A61">0.97</text>
+          <rect x="145" y="212" width="46" height="8" rx="4" fill="#D97757" opacity=".5"/>
+          <text x="225" y="130" font-size="12" fill="#23211E" font-weight="bold">T=1.0</text>
+          <rect x="275" y="110" width="46" height="110" rx="4" fill="#D97757"/>
+          <text x="277" y="105" font-size="11" fill="#6E6A61">0.55</text>
+          <rect x="328" y="190" width="40" height="30" rx="4" fill="#D97757" opacity=".55"/>
+          <text x="40" y="70" font-size="12" fill="#23211E" font-weight="bold">T=1.6</text>
+          <text x="60" y="245" font-size="10.5" fill="#6E6A61">几乎只抽第一名</text>
+          <text x="255" y="245" font-size="10.5" fill="#6E6A61">偶尔抽到二三名</text>
+          <text x="355" y="80" font-size="10.5" fill="#6E6A61">长尾也常中签</text>
+        </svg>
+        <pre class="term" style="font-size:11.5px;margin-top:6px"><span class="c">// 同一份需求，温度不同</span>
+<span class="g">T=0</span>  fetch(url,{cache:"no-store"})   每次一样
+<span class="g">T=1.2</span> 这次 fetch、下次 axios、
+      再下次手写 XMLHttpRequest</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- P7 四个性格缺陷 -->
+<section class="slide">
+  <div class="kicker">CH1 · 大脑怎么想 4/9</div>
+  <h1 class="tt">四个"性格缺陷"，<span class="warnc">全部来自"在猜"</span></h1>
+  <p class="sub">不是 bug，是特性。求它别这样没有用，给它外挂真相和规则才有用（→ CH3）</p>
+  <div class="grid2" style="flex:1">
+    <div class="card warn"><h3>① 统计记忆 ≠ 事实</h3>
+      <p>概率由语料出现频率决定，<b>不校验真值</b>。</p>
+      <pre class="term" style="margin-top:6px;font-size:11.5px">import { useSyncCache } from "react-dom"
+<span class="o">// ✗ 这个导出并不存在——它把"听起来该有"的</span>
+<span class="o">//   API 写成了"应该有"</span></pre></div>
+    <div class="card warn"><h3>② "听起来像" 优先于 "是对的"</h3>
+      <pre class="term" style="margin:6px 0 4px;font-size:11.5px">function paginate(items,pageSize){
+  return items.slice(page, page+pageSize)
+<span class="o">// ✗ 把"页码"当"偏移量"，第 2 页直接错位</span></pre>
+      <p class="small">命名、缩进、注释全对，<b>只有语义错</b>——风格工整掩盖逻辑错误。</p></div>
+    <div class="card warn"><h3>③ 分布外必编（OOD 幻觉）</h3>
+      <p>训练里没有，就只能按"最像的样子"拼。<b>内部自研框架、刚发布 3 天的 API 最危险。</b></p>
+      <pre class="term" style="margin-top:6px;font-size:11.5px">❯ 用我们内部的 @corp/orm 查用户
+› 推荐 repo.findUserByPhone()
+<span class="o">// ✗ 方法名和用法都是编的</span></pre></div>
+    <div class="card warn"><h3>④ 同一问题，结果可能不同</h3>
+      <p>采样是随机的："上次明明好了"是真实存在的现象，<b>bug 复现变难</b>。</p>
+      <p class="small mt">第 1 次用 Prisma、第 2 次换 TypeORM——不是它"变了"，是抽签。</p>
+      <p class="small"><b>排查习惯</b>：疑似不稳定时固定 seed / 降温，再判断是不是真问题。</p></div>
+  </div>
+  <div class="card acc mt"><p><b>记这四个词就够：不查真值、像先于对、没见过就编、每次抽签。</b>后面七个顽疾（CH3）全部能回溯到这里。</p></div>
+</section>
+
+<!-- P8 无记忆 -->
+<section class="slide">
+  <div class="kicker">CH1 · 大脑怎么想 5/9</div>
+  <h1 class="tt">它没有"记忆"，只有<span class="acc">上下文</span></h1>
+  <div class="half">
+    <div style="flex:1.1">
+      <div class="card acc mb"><h3>无状态推理：每轮都是"从零开始"</h3>
+        <div class="row">
+          <div class="card" style="flex:1"><p class="small"><b>第1轮</b> [系统+用户1]<br><b>第2轮</b> [系统+用户1+助手1+用户2]<br><b>第N轮</b> [……全部历史……]</p></div>
+        </div>
+        <p class="small mt">"它还记住我说的话" = "我把话又告诉了它一遍"。历史每轮重发：更长、更贵、更易稀释。</p></div>
+      <div class="card warn mb"><h3>中间会"失焦"：Lost in the Middle</h3>
+        <p class="small">关键信息放长上下文<b>中间位置</b>时，利用率明显下降（Liu et al., 2023）。开头与结尾更"响"，中段最容易被忽略——而且它不会告诉你"我没读到"。</p></div>
+      <div class="card ok"><h3>推论与 Harness 落点</h3>
+        <ul class="ls okc">
+          <li>对话越长，最早的约束越容易被淹没（→ 顽疾④）</li>
+          <li>换一个会话 = 换一个"新员工"（→ 记忆落盘 P40）</li>
+          <li>关键约束放<b>开头或结尾</b>，别埋中间；结论类信息写进文件</li>
+        </ul></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card gray" style="height:100%"><h3>比喻：一个每天上班失忆的同事</h3>
+        <p style="margin-top:8px">交接班必须靠<b>交接文档</b>，不能靠"他应该记得"。</p>
+        <svg viewBox="0 0 420 230" style="width:100%;margin-top:8px">
+          <rect x="30" y="30" width="360" height="24" rx="5" fill="#fff" stroke="#4A7C59" stroke-width="1.5"/>
+          <text x="42" y="47" font-size="11.5">开头：需求「必须用 PostgreSQL 14」← 记得</text>
+          <rect x="30" y="62" width="360" height="90" rx="5" fill="#C0452F" opacity=".07" stroke="#C0452F" stroke-dasharray="4,3"/>
+          <text x="42" y="82" font-size="11.5" fill="#C0452F">中段：500 行代码 + 工具输出日志</text>
+          <text x="42" y="102" font-size="11.5" fill="#C0452F">最早的约束被挤到这里 → 利用率谷底</text>
+          <text x="42" y="130" font-size="11.5" fill="#6E6A61">（第 30 轮时中段已堆满测试日志）</text>
+          <rect x="30" y="160" width="360" height="24" rx="5" fill="#fff" stroke="#4A7C59" stroke-width="1.5"/>
+          <text x="42" y="177" font-size="11.5">结尾：最新一条消息 ← 记得</text>
+          <text x="30" y="210" font-size="11.5" fill="#6E6A61">对策预告：压缩（P37）/ 记忆落盘（P40）/ 约束复述（P28）</text>
+        </svg></div>
+    </div>
+  </div>
+</section>
+
+<!-- P9 知识冻结 -->
+<section class="slide">
+  <div class="kicker">CH1 · 大脑怎么想 6/9</div>
+  <h1 class="tt">它没有"世界时钟"：<span class="acc">权重冻结在训练结束那天</span></h1>
+  <div class="row" style="flex:1">
+    <div style="flex:1.15">
+      <div class="row mb">
+        <div class="card" style="flex:1"><h3 class="small" style="color:#6E6A61">模型权重的世界（冻结）</h3>
+          <ul class="ls" style="margin-top:6px"><li class="small">知道训练截止前最流行的写法</li><li class="small">不知道 A 库已废弃</li><li class="small">不知道上周发布的新版本</li></ul></div>
+        <div class="card" style="flex:1"><h3 class="small" style="color:#6E6A61">真实世界（流动）</h3>
+          <ul class="ls" style="margin-top:6px"><li class="small">框架发新主版本，旧 API 废弃</li><li class="small">安全公告要求 24h 内修复</li><li class="small">团队昨天定了新规范，仓库刚合了 PR #1024</li></ul></div>
+      </div>
+      <div class="card warn mb"><h3>最麻烦的不是"不知道"，是"不知道自己过期"</h3>
+        <p>它仍然用同样的自信回答你：给你 2024 年最流行的写法，<b>一句提醒都没有</b>。旧写法在语料里出现得更多 → 概率更高 → 它反而"更确信旧的"。</p></div>
+      <div class="card ok"><h3>由你补上的两条"时钟"</h3>
+        <ul class="ls okc"><li><b>工具</b>：让它读 lock 文件、查文档、跑命令，先看再写</li><li><b>知识注入</b>：把"当前版本 + 关键变更"放进上下文（→ 顽疾②，P26）</li></ul></div>
+    </div>
+    <div style="flex:.85">
+      <div class="card gray" style="height:100%"><h3>两条时间线</h3>
+        <svg viewBox="0 0 420 280" style="width:100%;margin-top:8px">
+          <line x1="40" y1="70" x2="400" y2="70" stroke="#4A7C59" stroke-width="3"/>
+          <text x="40" y="52" font-size="12" fill="#4A7C59" font-weight="bold">权重时间线 · 2023 ──→ 训练截止 ❄ 之后空白</text>
+          <circle cx="230" cy="70" r="6" fill="#1F1E1E"/>
+          <text x="218" y="92" font-size="11" fill="#6E6A61">知识截止日</text>
+          <line x1="40" y1="180" x2="400" y2="180" stroke="#D97757" stroke-width="3"/>
+          <text x="40" y="162" font-size="12" fill="#D97757" font-weight="bold">真实世界时间线 · 2023 ──────────→ 今天</text>
+          <circle cx="230" cy="180" r="6" fill="#1F1E1E"/>
+          <circle cx="380" cy="180" r="6" fill="#1F1E1E"/>
+          <text x="352" y="202" font-size="11" fill="#6E6A61">今天</text>
+          <rect x="230" y="110" width="150" height="40" rx="6" fill="#C0452F" opacity=".1" stroke="#C0452F" stroke-dasharray="4,3"/>
+          <text x="240" y="128" font-size="11.5" fill="#C0452F">过期区：API 变更 · 实践漂移</text>
+          <text x="240" y="144" font-size="10.5" fill="#6E6A61">无同步机制，除非你显式补上</text>
+        </svg>
+        <p class="small">可验证的推断：让它写"最新写法"，再问"这是哪一年的"——两个答案往往互相矛盾。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- P10 Elo & AA-3D -->
+<section class="slide">
+  <div class="kicker">CH1 · 大脑怎么想 7/9</div>
+  <h1 class="tt">不给自己打分的评测，才有参考价值：<span class="acc">Elo 与 AA-3D</span></h1>
+  <div class="row" style="flex:1">
+    <div style="flex:1.1">
+      <div class="card acc mb"><h3>Elo：源自国际象棋的打分方式</h3>
+        <p>不打"绝对分"，只记录<b>两两对局谁赢</b>：盲测投票 → Bradley–Terry 最大似然 → 等级分 → 缩放到 Elo 区间。</p>
+        <div class="pill2 mt">
+          <div class="pill" style="flex:1"><b>盲测</b><br><span class="small">匿名 A/B，排除品牌光环</span></div>
+          <div class="pill" style="flex:1"><b>相对</b><br><span class="small">只反映相对位次，无绝对含义</span></div>
+          <div class="pill" style="flex:1"><b>波动</b><br><span class="small">每天随对局数变化，看区间不看单点</span></div>
+        </div></div>
+      <div class="card mb"><h3>AA-3D：为什么它对开发者更可信</h3>
+        <p class="small"><b>55 个交互式 3D 场景，全部跑在同一个 Harness 里</b>——控制变量，隔离出"模型本身"的能力差异；场景接近真实工程而非聊天。</p>
+        <ul class="ls mt"><li class="small">排行榜分两路：<b>AA-3D Elo</b>（模型能力）与 <b>Coding Agent Index</b>（模型+外套的组合能力，P13）</li><li class="small">读榜前提：同一基准内比较才有意义，跨榜单比较无意义</li></ul></div>
+      <div class="card ok"><h3>怎么换算胜率</h3>
+        <p class="small">Elo 差 100 ≈ 胜率 64%，差 200 ≈ 76%，差 150 ≈ 70%。<b>差距小于置信区间时，视为打平</b>——这就是下一页每根条上的"横线"。</p></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card gray" style="height:100%">
+        <h3>对局流程</h3>
+        <div class="flow mt" style="flex-direction:column;gap:6px">
+          <div class="fbox"><b>① 同一任务</b><small>55 个 3D 场景，同 Harness 起跑</small></div>
+          <div class="fbox"><b>② 双盲作答</b><small>两个匿名模型各答一份</small></div>
+          <div class="fbox"><b>③ 人投票</b><small>盲测选优，不知品牌</small></div>
+          <div class="fbox"><b>④ 更新 Elo</b><small>胜率 → 等级分 + 置信区间</small></div>
+        </div>
+        <p class="small mt">对比"厂商自报 benchmark"：自报可挑题、可调参、可重复跑取最好成绩。盲测对局砍掉了全部操作空间。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- P11 AA-3D 榜单 -->
+<section class="slide">
+  <div class="kicker">CH1 · 大脑怎么想 8/9</div>
+  <h1 class="tt" style="font-size:27px">AA-3D Elo 榜单 · 27 模型（2026-11-18 抓取）</h1>
+  <div class="row" style="flex:1">
+    <div style="flex:1">
+      <div id="lb1"></div>
+    </div>
+    <div style="flex:1">
+      <div id="lb2"></div>
+    </div>
+  </div>
+  <div class="row mt" style="gap:12px">
+    <div class="card acc" style="flex:1.2"><p><b>读法一：看横线（置信区间）</b>——第 4、5 名（1204/1202）横线几乎完全重叠，<b>视为并列</b>，不要纠结先后。</p></div>
+    <div class="card acc" style="flex:1.2"><p><b>读法二：看断层</b>——Top3（1318/1271/1259）与第二梯队（1204↓）之间有约 55 分断层，这才是"真差距"。</p></div>
+    <div class="card ok" style="flex:1.4"><p><b>读法三：区间尾部</b>——14 名之后横线普遍更宽（样本少），排序可信度下降；26/27 名是明显的生态位差异而非"能力差一档"。</p></div>
+  </div>
+  <p class="note">来源：Artificial Analysis · AA-3D v1.0 Leaderboard · 抓取 2026-11-18 · 数字取整 · 条上深色横线为 95% 置信区间</p>
+</section>
+
+<!-- P12 档位 -->
+<section class="slide">
+  <div class="kicker">CH1 · 大脑怎么想 9/9 · 榜单应用</div>
+  <h1 class="tt">同一个模型，"开一半油门"能差多少？</h1>
+  <div class="row" style="flex:1">
+    <div style="flex:1.1">
+      <div class="card acc mb"><h3>AA-3D · 同模型不同配置</h3>
+        <table class="t" style="font-size:13px">
+          <tr><th>模型</th><th>Max 档</th><th>默认回退</th><th>差值</th></tr>
+          <tr><td><b>GPT-6.2 Astra</b></td><td class="mono">1318</td><td class="mono">1168</td><td class="mono"><b>150</b></td></tr>
+          <tr><td><b>GPT-6.2 Sol</b></td><td class="mono">1259</td><td class="mono">1131</td><td class="mono"><b>128</b></td></tr>
+          <tr><td class="small">榜单第 1 vs 第 3 名</td><td colspan="2" class="small">1318 vs 1259</td><td class="mono">59</td></tr>
+        </table>
+        <p class="small mt">换算胜率：<b>档位差 150 分 ≈ 70% 胜率差</b>；第 1 vs 第 3 名 59 分 ≈ 58%。<b>换个档位 &gt; 换个模型</b>（约 2.5 倍差距）。</p></div>
+      <div class="card"><h3>结论：先问"怎么开"，再问"用哪个"</h3>
+        <div class="grid2 mt">
+          <div class="card warn"><p class="small"><b>永远最高档</b><br>简单改动烧满预算，等待更久，账单翻倍</p></div>
+          <div class="card warn"><p class="small"><b>永远最低档</b><br>复杂任务"看起来做了"，返工比省钱更贵</p></div>
+        </div>
+        <div class="card ok mt"><p class="small"><b>按任务分级路由</b>：改写/解释用低档；跨文件重构与调试升档。<b>"默认回退"</b>=调度策略决定的回落配置——它悄悄决定了你实际体验到的能力。</p></div></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card gray" style="height:100%"><h3>模型 × 档位 × Harness = 实际能力</h3>
+        <svg viewBox="0 0 420 300" style="width:100%;margin-top:6px">
+          <circle cx="120" cy="90" r="62" fill="#D97757" opacity=".18" stroke="#D97757" stroke-width="2"/>
+          <text x="120" y="86" text-anchor="middle" font-size="13" font-weight="bold" fill="#B85C3E">模型</text>
+          <text x="120" y="104" text-anchor="middle" font-size="10.5" fill="#6E6A61">选哪个（榜单）</text>
+          <circle cx="300" cy="90" r="62" fill="#4A7C59" opacity=".15" stroke="#4A7C59" stroke-width="2"/>
+          <text x="300" y="86" text-anchor="middle" font-size="13" font-weight="bold" fill="#4A7C59">档位/预算</text>
+          <text x="300" y="104" text-anchor="middle" font-size="10.5" fill="#6E6A61">怎么开（路由）</text>
+          <circle cx="210" cy="215" r="62" fill="#23211E" opacity=".08" stroke="#8A8578" stroke-width="2"/>
+          <text x="210" y="211" text-anchor="middle" font-size="13" font-weight="bold" fill="#57534A">Harness</text>
+          <text x="210" y="229" text-anchor="middle" font-size="10.5" fill="#6E6A61">接哪个外套（CH2）</text>
+          <text x="210" y="292" text-anchor="middle" font-size="12.5" fill="#23211E" font-weight="bold">交集才是你每天实际拿到的能力</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- P13 Coding Agent Index -->
+<section class="slide">
+  <div class="kicker">CH1 · 收束 · 榜单应用</div>
+  <h1 class="tt">模型强 ≠ Agent 强：<span class="acc">Coding Agent Index</span></h1>
+  <p class="sub">Index v2.1 = FrontierCode-AA 2.0（软件工程 132 项）+ Terminal-Bench 4.1（终端 66 项）+ SWE-Atlas-QnA-AA（问答 124 项）三项等权 —— 测的是"模型+外套"的组合</p>
+  <div class="row" style="flex:1">
+    <div style="flex:1.15">
+      <table class="t" style="font-size:13px">
+        <tr><th>Agent（模型+外套）</th><th style="width:80px">Index</th><th style="width:120px">成本/任务</th></tr>
+        <tr><td><b>Claude Code + Fable 5.2</b></td><td class="mono"><b>58</b></td><td class="mono">$15.47</td></tr>
+        <tr><td><b>Claude Code + Opus 5.5</b></td><td class="mono"><b>58</b></td><td class="mono">$5.35</td></tr>
+        <tr><td>Claude Code + Sonnet 5.5</td><td class="mono">56</td><td class="mono">—</td></tr>
+        <tr><td>Antigravity CLI + Gemini 4 Carbon</td><td class="mono">55</td><td class="mono">—</td></tr>
+        <tr><td>Muse Code + Wonder Full</td><td class="mono">54</td><td class="mono">—</td></tr>
+        <tr><td>Codex + GPT-6.2 Astra</td><td class="mono">53</td><td class="mono">—</td></tr>
+        <tr><td>Codex + GPT-6.2 Sol</td><td class="mono">50</td><td class="mono">—</td></tr>
+        <tr><td>Kimi Code CLI + K3.1 Pro</td><td class="mono">49</td><td class="mono">—</td></tr>
+        <tr><td>OpenCode + GLM-5.3</td><td class="mono">40</td><td class="mono">—</td></tr>
+        <tr><td>DeepSeek Harness + V4.1 Flash</td><td class="mono">37</td><td class="mono">$0.49*</td></tr>
+      </table>
+      <p class="note">展示 11/15 行（省略同分项）· * $0.49 为 Anthropic+Haiku 5.5 口径 · 来源：Artificial Analysis · 2026-11-18</p>
+    </div>
+    <div style="flex:.85">
+      <div class="card warn mb"><h3>同一份"外套"，账单差 3 倍</h3>
+        <p class="small">同为 Index 58：<b>$15.47 vs $5.35</b>——同分不同价。同分时选便宜的，差距小于置信区间时更应如此。</p></div>
+      <div class="card acc mb"><h3>读榜四法则</h3>
+        <ul class="ls"><li class="small"><b>看区间</b>：差异小于置信区间 ≠ 真的更强</li><li class="small"><b>看成本</b>：同分可能价差 10 倍</li><li class="small"><b>看任务</b>：你的活像终端、PR 还是问答，选对应子项</li><li class="small"><b>看版本</b>：模型名必须跟档位、外套一起读</li></ul></div>
+      <div class="card ok"><h3>为什么 DeepSeek Harness 排末位</h3>
+        <p class="small">外套（Agent）本身也会丢分——不代表其模型最弱。<b>榜单说明"谁能干"；能不能接进工程，是 CH2 的事。</b></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- P14 CH2章节页 -->
+<section class="slide sec">
+  <div class="cn">02</div>
+  <h1>Vibe → Harness</h1>
+  <p class="sub" style="font-size:17px">2023-2026：生成越来越便宜，稀缺的变成"可靠交付"</p>
+  <div class="qs">
+    <div class="q"><span class="n">Q1</span>四年间人的角色怎么变？为什么每一步都要退后</div>
+    <div class="q"><span class="n">Q2</span>Agent 是什么、循环之后它在哪里丢分</div>
+    <div class="q"><span class="n">Q3</span>Harness 为什么不是比喻，而是工程系统</div>
+  </div>
+</section>
+
+<!-- P15 时间线 -->
+<section class="slide">
+  <div class="kicker">CH2 · Vibe → Harness 1/10</div>
+  <h1 class="tt">2023-2026 简要时间线：<span class="acc">人的角色在退后</span></h1>
+<style>.tl .node{display:flex;flex-direction:column}.tl .tx{flex:1;background:#fff;border:1px solid #E3DDCF;border-radius:10px;padding:14px 16px}</style>
+  <div class="tl" style="flex:1">
+    <div class="node"><div class="dot"></div><div class="yr">2023 · 补全</div><div class="tx" style="text-align:left"><b>IDE 内联补全，Tab 接受</b><br>AI 只看见光标附近几十行<br><br><b>你的角色</b>：写作者<br><b>AI 能力</b>：补全一行、记 API<br><b>人的价值</b>：判断整段逻辑对不对<br><b>省下</b>：记忆 API 的负担</div></div>
+    <div class="node"><div class="dot"></div><div class="yr">2024 · 对话</div><div class="tx" style="text-align:left"><b>聊天窗口问，复制进仓库</b><br>能解释、能重写，看不见你的工程<br><br><b>你的角色</b>：指挥 + 搬运工<br><b>AI 能力</b>：生成一段、解释一段<br><b>人的价值</b>：把需求翻译成清楚描述<br><b>瓶颈</b>：复制粘贴</div></div>
+    <div class="node"><div class="dot"></div><div class="yr">2025 · Vibe</div><div class="tx" style="text-align:left"><b>一句话 → 可运行结果</b><br>Karpathy 命名 "vibe coding"<br><br><b>你的角色</b>：描述者 / 提要求的人<br><b>AI 能力</b>：整块生成、自己试错<br><b>人的价值</b>：判断"是不是我要的"<br><b>瓶颈</b>："它到底对不对"</div></div>
+    <div class="node"><div class="dot"></div><div class="yr">2026 · Agent/Harness</div><div class="tx" style="text-align:left"><b>读文件、跑命令、跑测试</b><br>长任务无人值守<br><br><b>你的角色</b>：审核者 + 规则制定者<br><b>AI 能力</b>：规划、执行、自检<br><b>人的价值</b>：定边界、定验收、担责任<br><b>瓶颈</b>："敢不敢让它自己跑完"</div></div>
+  </div>
+  <div class="card gray mt"><p class="small">一条主线：<b>AI 的视野从"光标附近几十行"扩到"整个仓库"，人的角色从"写字"退到"定规则"</b>。每一步退后都以"验收机制存在"为前提——没有验收，退后就是失控。</p></div>
+</section>
+
+<!-- P16 Vibe 红利 -->
+<section class="slide">
+  <div class="kicker">CH2 · Vibe → Harness 2/10</div>
+  <h1 class="tt">Vibe Coding 真正的红利：<span class="acc">把想法变可见</span></h1>
+  <div class="row" style="flex:1">
+    <div style="flex:1.1">
+      <div class="card acc mb"><h3>从"想法"到"能点开的东西"</h3>
+        <pre class="term" style="font-size:12px">你："给团队做个值班表，能拖拽换班就行"
+Vibe：你看结果，不看代码
+  传统：建项目·定框架·画页面·调样式·部署 ≈ 3 天
+  Vibe：一句话 + 几轮调整 ≈ 1 小时</pre>
+        <p class="small mt">被压缩掉的不是"质量"，是<b>起步门槛</b>。</p></div>
+      <div class="grid3">
+        <div class="card ok"><h3 class="small">红利一</h3><p class="small">探索成本趋近零："值不值得做"用眼睛投票，不用开会判断</p></div>
+        <div class="card ok"><h3 class="small">红利二</h3><p class="small">精力上移：不与语法较劲，转向需求是否清楚、哪里会出事</p></div>
+        <div class="card ok"><h3 class="small">红利三</h3><p class="small">产品/运营/设计能自己做原型；代价是可维护性被透支</p></div>
+      </div>
+      <div class="card gray mt"><p class="small"><b>同一个需求，两种模式：</b>Vibe 产出能点的页面，标准"看起来对"，出错重生成，寿命一次性；工程产出组件+测试，标准"清单全绿"，出错回滚+复盘，寿命按年。<b>Vibe 让 0→1 变便宜，1→100 没变便宜。</b></p></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card gray" style="height:100%"><h3>适用边界</h3>
+        <div class="card ok mt"><h3 class="small">✓ 适合</h3><p class="small">一次性脚本 · 数据探索 · Demo/内部工具 · UI 草稿 · 学新框架先跑起来</p></div>
+        <div class="card warn mt"><h3 class="small">✗ 不适合</h3><p class="small">要维护三年的业务代码 · 涉钱涉权限路径 · 多人协作仓库 · 有合规审计要求的系统</p></div>
+        <p class="small mt" style="margin-top:14px">它的产出物是"演示"，不是"产品"——但演示这一步，过去要花掉你三天。<b>当演示要放进真实仓库，就是下一页的五道坎。</b></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- P17 Vibe 翻车五道坎 -->
+<section class="slide">
+  <div class="kicker">CH2 · Vibe → Harness 3/10</div>
+  <h1 class="tt">原型 ↔ 生产：桥断在中段</h1>
+  <div class="row mb">
+    <div class="card gray" style="flex:1"><h3 class="small">左岸 · 演示</h3><p class="small">"在我机器上能跑" · 一次成功 · 单人 · 无真实数据 · 出问题重跑一遍就好</p></div>
+    <div style="flex:.4;display:flex;align-items:center;justify-content:center"><span class="acc" style="font-weight:800;font-size:18px">→ 桥断在这里</span></div>
+    <div class="card" style="flex:1;border:1.5px solid #D97757"><h3 class="small" style="color:#B85C3E">右岸 · 生产</h3><p class="small">"三年后还能改" · 有流量 · 多人 · 有合规 · 出问题能查清、能退回</p></div>
+  </div>
+  <div class="grid3" style="flex:1">
+    <div class="card warn"><h3><span class="mono" style="color:#C0452F">①</span> 没有验收标准</h3><p class="small">"做对了"没被定义，只能靠肉眼——肉眼不可复用、不可审计。</p></div>
+    <div class="card warn"><h3><span class="mono" style="color:#C0452F">②</span> 幻觉会累积</h3><p class="small">第一步编了个不存在的函数，后面十步都在错误地基上砌墙。</p></div>
+    <div class="card warn"><h3><span class="mono" style="color:#C0452F">③</span> 不可维护</h3><p class="small">命名、分层、错误处理缺失；三个月后没人（包括你）读得懂。</p></div>
+    <div class="card warn"><h3><span class="mono" style="color:#C0452F">④</span> 没有边界</h3><p class="small">顺手改配置、装不认识的依赖、把密钥写进日志和仓库。</p></div>
+    <div class="card warn"><h3><span class="mono" style="color:#C0452F">⑤</span> 责任与审计</h3><p class="small">线上事故说不清：谁的要求、走了哪几步、为什么这么改。</p></div>
+    <div class="card ok"><h3>关键判断</h3><p class="small"><b>不是"AI 不行"，是缺了工程的另一半</b>。这半边后来有了名字——先补 Agent，再补 Harness。</p></div>
+  </div>
+</section>
+
+<!-- P18 Agent 四要素 -->
+<section class="slide">
+  <div class="kicker">CH2 · Vibe → Harness 4/10</div>
+  <h1 class="tt">Agent：把"会回答"变成<span class="acc">"会动手"</span></h1>
+  <p class="sub">Agent = 模型 + 工具 + 循环 + 环境反馈。缺了循环只是一次问答；缺了反馈只能在瞎猜。</p>
+  <div class="half">
+    <div style="flex:1.1">
+      <div class="card gray" style="height:100%"><h3>ReAct 循环实录</h3>
+        <pre class="term" style="margin-top:8px;font-size:12px"><span class="o">THOUGHT</span>    "先看看现有测试里有没有相关用例"
+<span class="o">ACTION</span>     grep -rn "timeout" tests/
+<span class="o">OBSERVATION</span> tests/auth_spec.rb:42
+            expect timeout 3s → 找到 1 处
+<span class="o">THOUGHT</span>    "超时断言在这，改实现前先改它"
+<span class="o">ACTION</span>     edit src/auth/session.rb
+<span class="o">OBSERVATION</span> exit 0 · 45 files changed
+<span class="o">ACTION</span>     pnpm test
+<span class="o">OBSERVATION</span> 42 passed, 1 failed → 回到思考
+<span class="o">…</span>
+<span class="g">完成 → 交付 + 验收</span></pre></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card acc mb"><h3>四个要素，各自的不可替代性</h3>
+        <div class="step"><span class="sn">◆ 模型</span><p class="small">= 决策。决定下一步；它仍然只会"猜"，只是猜完能动手了。</p></div>
+        <div class="step"><span class="sn">◇ 工具</span><p class="small">= 手脚。读文件、跑命令、搜网页。工具决定它"能碰到什么真相"。</p></div>
+        <div class="step"><span class="sn">○ 循环</span><p class="small">= 耐心。一次不对就再来，ReAct 把"想"和"做"交替起来。</p></div>
+        <div class="step"><span class="sn">● 反馈</span><p class="small">= 眼睛。stdout、退出码、测试结果。没有观察，纠正无源之水。</p></div>
+      </div>
+      <div class="card warn"><h3>与 Vibecoding 的分界</h3>
+        <p class="small">Vibe 的终点是一段文本；Agent 的终点是<b>改变过的仓库 + 通过的测试</b>。代价：错误的执行也被循环放大（→ 下一页的丢分点）。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- P19 Agent 四丢分点 -->
+<section class="slide">
+  <div class="kicker">CH2 · Vibe → Harness 5/10</div>
+  <h1 class="tt">会循环之后，它在哪里丢分？</h1>
+  <p class="sub">这四条不是模型缺陷，是"把模型放进循环"后暴露的<b>工程缺陷</b>——每一条都能在同一个循环里观察到</p>
+  <div class="grid2" style="flex:1">
+    <div class="card warn"><h3>① 工具太多，选错</h3>
+      <pre class="term" style="margin:6px 0;font-size:11.5px">tools = 40 个 · 描述都写"用于查询"
+→ 有 grep 却整文件读，12 个无关文件，
+  烧掉 40% 上下文</pre>
+      <p class="small">根因：工具描述不清/集合过大，选择概率被摊薄。<b class="okc">Harness→ 瘦身到 ≤10 个，每个描述写"何时用"</b></p></div>
+    <div class="card warn"><h3>② 目标漂移</h3>
+      <pre class="term" style="margin:6px 0;font-size:11.5px">task: 修 /orders 的 500
+step 12: "顺便统一所有 handler"
+step 31: 改了 19 个文件，测试挂 6 个</pre>
+      <p class="small">根因：每轮只见局部上下文，没有"不许越界"硬约束。<b class="okc">Harness→ 任务卡写明改什么/不改什么，越界即停</b></p></div>
+    <div class="card warn"><h3>③ 没有验收标准</h3>
+      <pre class="term" style="margin:6px 0;font-size:11.5px">✔ 已完成修复！
+（实际上：编译通过 ≠ 行为正确，
+  500 还在，只是换了报错文案）</pre>
+      <p class="small">它无法自评"做对了"。<b class="okc">Harness→ 完成条件=命令：pnpm test 全绿 + 手工复现 3 次</b></p></div>
+    <div class="card warn"><h3>④ 上下文越用越脏</h3>
+      <pre class="term" style="margin:6px 0;font-size:11.5px">step 40+ 工具输出堆满窗口
+→ 重复读已读文件、推翻自己刚写的方案</pre>
+      <p class="small">根因：R3 稀释 + R2 无状态叠加。<b class="okc">Harness→ 压缩/子 Agent 隔离/按需加载（CH4）</b></p></div>
+  </div>
+</section>
+
+<!-- P20 马具 -->
+<section class="slide">
+  <div class="kicker">CH2 · Vibe → Harness 6/10</div>
+  <h1 class="tt">Harness：<span class="acc">这个词不是比喻</span></h1>
+  <div class="half">
+    <div style="flex:1.15">
+      <div class="card acc mb"><h3>工程定义</h3>
+        <p><b>Harness = 包裹在模型之外的运行时</b>：上下文装配、工具提供、权限控制、沙箱执行、记忆检索、验证与回放。不是某个具体产品，是一类系统的名字。</p></div>
+      <div class="card mb"><h3>为什么"马具"这个词是准确的</h3>
+        <ul class="ls"><li>马有力气——模型会生成、会推理</li><li>但牵不动车——它不会自己交付，也不负责后果</li><li>套上马具才成为运输力——力气被导向你要的方向</li></ul>
+        <div class="pill2 mt"><div class="pill" style="flex:1"><b>鞍 = 工具</b></div><div class="pill" style="flex:1"><b>缰绳 = 权限</b></div><div class="pill" style="flex:1"><b>头套 = 上下文裁剪</b></div><div class="pill" style="flex:1"><b>鞍垫 = 记忆</b></div></div>
+        <p class="small mt">马具不是"限制"：缰绳让马走你要的方向，轭把力气接到车上——<b>每一件都在扩大"可用"的范围</b>。同一匹马：不给权限会踩坏地板，给权限能拉货；装上眼罩不被路边分心（=上下文裁剪）。</p></div>
+    </div>
+    <div style="flex:.85">
+      <div class="card gray mb"><h3>一条乘法公式</h3>
+        <pre class="term" style="text-align:center;font-size:13px">Agent 能力 ≈ 模型 × Harness × 环境
+任一项 ≈ 0，整体 ≈ 0
+—— "模型很强但用起来很笨"的解释</pre></div>
+      <div class="card ok mb"><h3>三个词别混</h3>
+        <p class="small"><b>Agent</b> 是角色（谁干活）· <b>Harness</b> 是装备（怎么干）· <b>环境</b> 是场地（在哪干：git/测试/CI）</p></div>
+      <div class="card"><h3>2026 工程共识</h3>
+        <p class="small">当生成变便宜，"能不能做出来"不再稀缺。稀缺的是<b>可靠、可信任地做完、做对、之后还能改</b>。旧问题 Can it build it? → 新问题 <b>Can I trust it?</b></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- P21 六大件 -->
+<section class="slide">
+  <div class="kicker">CH2 · Vibe → Harness 7/10</div>
+  <h1 class="tt">Harness 的<span class="acc">六大件</span>：没有一件让模型"更聪明"</h1>
+  <p class="sub">它们全都在补结构性漏洞——对照第 7 页的四个性格缺陷逐一落位</p>
+  <div class="grid3" style="flex:1">
+    <div class="card acc"><h3><span class="mono acc">01</span> 上下文装配</h3><p class="small">系统提示、项目记忆、任务卡、检索结果，按预算装入窗口。<br><b>治</b>：视野缺失、失忆。</p></div>
+    <div class="card acc"><h3><span class="mono acc">02</span> 工具接入</h3><p class="small">读/写/执行/检索/MCP，带"何时用"描述。工具=它接触真相的唯一通道。<br><b>治</b>：幻觉、知识过期。</p></div>
+    <div class="card acc"><h3><span class="mono acc">03</span> 权限沙箱</h3><p class="small">只读放行 / 写入受限 / 高危转人工；容器与分支隔离。<br><b>治</b>：不可控改动、边界缺失。</p></div>
+    <div class="card acc"><h3><span class="mono acc">04</span> 记忆检索</h3><p class="small">会话笔记、项目文件、知识库，按需召回注入。<br><b>治</b>：跨会话失忆、教训不保留。</p></div>
+    <div class="card acc"><h3><span class="mono acc">05</span> 验证回路</h3><p class="small">编译/测试/lint 结果回灌；红灯禁止交付。<br><b>治</b>：自评不可信、结果难验证。</p></div>
+    <div class="card acc"><h3><span class="mono acc">06</span> 观测回放</h3><p class="small">全程 trace：每一步读了什么、改了什么、为什么。<br><b>治</b>：责任不清、无法审计。</p></div>
+  </div>
+  <div class="card gray mt"><p class="small">六大件 = CH3 对策总表（P33-34）的零件库，也是 CH6 评估（P49）的检查清单。</p></div>
+</section>
+
+<!-- P22 主流 Harness 对比 -->
+<section class="slide">
+  <div class="kicker">CH2 · Vibe → Harness 8/10</div>
+  <h1 class="tt">主流 Harness 横向对比：<span class="acc">形态不同，本质相同</span></h1>
+  <p class="sub">不排名、不推荐换工具——只比较定位。分数同 Coding Agent Index 口径（P13）。</p>
+  <table class="t" style="font-size:13px;flex:1">
+    <tr><th>Harness</th><th>形态</th><th>定位与适合</th><th style="width:118px">Index</th><th style="width:96px">成本/任务</th></tr>
+    <tr><td><b>Claude Code</b></td><td class="small">terminal CLI · IDE 集成</td><td class="small">长任务与工具生态成熟，适合复杂仓库改造、长期维护；可编程性最强（CLAUDE.md/Skills/Hooks/MCP）</td><td class="mono"><b>58</b></td><td class="mono">$15.47</td></tr>
+    <tr><td><b>Codex CLI</b></td><td class="small">terminal CLI</td><td class="small">与 OpenAI 模型深度结合，响应快、命令风格直接；偏好 OpenAI 生态首选</td><td class="mono">53</td><td class="mono">$5.12</td></tr>
+    <tr><td><b>OpenCode</b></td><td class="small">open-source CLI</td><td class="small">开放、可自托管、模型可替换；适合需审计与内网部署的团队</td><td class="mono">40</td><td class="small">随模型浮动</td></tr>
+    <tr><td><b>DeepSeek Harness</b></td><td class="small">open-source · 插件化</td><td class="small">"一切皆插件"：工具、上下文策略、记忆后端可替换，适合做平台</td><td class="mono">37</td><td class="small">随模型浮动</td></tr>
+    <tr><td><b>Muse Code</b></td><td class="small">vendor agent</td><td class="small">与自家模型绑定的成品体验；同一外套两个档位，分数差 10 分</td><td class="mono">54/44</td><td class="small">—</td></tr>
+    <tr><td><b>Antigravity CLI</b></td><td class="small">vendor agent</td><td class="small">Gemini 4 双配置（Carbon 55 / Hydrogen 52），长上下文见长</td><td class="mono">52-55</td><td class="small">—</td></tr>
+    <tr><td><b>Cline / Roo 等</b></td><td class="small">VSCode 插件</td><td class="small">轻量、模型自选；适合个人与轻任务</td><td class="small">—</td><td class="small">—</td></tr>
+  </table>
+  <div class="card ok mt"><p class="small"><b>选型三问：</b>① 主要工作形态是终端还是 IDE？② 需要自托管/审计吗？③ 深度定制（自有知识库、插件）还是开箱即用？——先答这三问，再看 Index 和成本。</p></div>
+</section>
+
+<!-- P23 共识+两幕交汇 -->
+<section class="slide">
+  <div class="kicker">CH2 · 收束</div>
+  <h1 class="tt">马具放大了马的力气，<span class="warnc">也放大了马的毛病</span></h1>
+  <div class="row mb">
+    <div class="card acc" style="flex:1"><h3 class="small" style="color:#B85C3E">第一幕结论</h3><p class="small">它只会猜：不查真值、像先于对、没见过就编、每次抽签</p></div>
+    <div class="card acc" style="flex:1"><h3 class="small" style="color:#B85C3E">第二幕结论</h3><p class="small">它现在能干活：读仓库、跑命令、改文件、自主循环</p></div>
+    <div class="card warn" style="flex:1.3"><h3 class="small">合起来</h3><p class="small">猜错一次的代价，被乘以<b>执行次数 × 文件数量 × 自动化程度</b></p></div>
+  </div>
+  <div class="grid2" style="flex:1">
+    <div class="card"><h3>四条放大链</h3>
+      <ul class="ls warnc">
+        <li>干得越多 → 错的传播面越大：一次幻觉写进 20 个文件（不再是一段回答）</li>
+        <li>干得越久 → 越依赖记忆：超过一个窗口必然断片</li>
+        <li>干得越自动 → 越需要闸门：没人盯着时，权限是唯一护栏</li>
+        <li>干得越快 → 越需要验证：人的验收速度成为新瓶颈</li>
+      </ul></div>
+    <div class="card ok"><h3>所以 CH3 的结构是固定的</h3>
+      <div class="flow mt">
+        <div class="fbox"><b>现象</b><small>在真实任务里怎么坏</small></div>
+        <div class="farr">→</div>
+        <div class="fbox"><b>根源</b><small>回溯哪条概率缺陷</small></div>
+        <div class="farr">→</div>
+        <div class="fbox"><b>对策</b><small>落到哪个零件</small></div>
+        <div class="farr">→</div>
+        <div class="fbox"><b>检验</b><small>用什么数字判断治好</small></div>
+      </div>
+      <p class="small mt">每一个被放大的毛病都对应一条工程对策——<b>没有一个靠"换个模型"能解决</b>。下一页先看全景台账。</p></div>
+  </div>
+</section>
+
+<!-- P24 CH3章节页 -->
+<section class="slide sec">
+  <div class="cn">03</div>
+  <h1>七顽疾 × 对策</h1>
+  <p class="sub" style="font-size:17px">七个问题 · 每个都按"现象 → 根源 → 对策 → 检验"走一遍</p>
+  <div class="qs" style="width:700px">
+    <div class="q"><span class="n">01-04</span>幻觉 · 知识过期 · 目标漂移 · 长任务失忆——信息对不对、够不够</div>
+    <div class="q"><span class="n">05-07</span>不可控改动 · 结果难验证 · 成本延迟——手伸多远、谁说了算、账单多大</div>
+    <div class="q"><span class="n">汇总</span>七条对策落在六个零件上——提示词不在其中（P33-P34）</div>
+  </div>
+</section>
+
+<!-- P25 顽疾全景 -->
+<section class="slide">
+  <div class="kicker">CH3 · 顽疾 × 对策 1/11</div>
+  <h1 class="tt">顽疾全景：七个问题，一张台账</h1>
+  <div class="grid4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;flex:1">
+    <div class="card warn"><h3 class="small"><span class="mono" style="color:#C0452F">①</span> 幻觉</h3><p class="small">没有真值的地方，用"最像的形状"填空</p><p class="small mt" style="color:#6E6A61">例：timeoutMs 其实叫 timeout，静默忽略</p></div>
+    <div class="card warn"><h3 class="small"><span class="mono" style="color:#C0452F">②</span> 知识过期</h3><p class="small">训练截止之后的世界，它一无所知，且更确信"旧的"</p><p class="small mt" style="color:#6E6A61">例：引用三年前方案，对新版本一无所知</p></div>
+    <div class="card warn"><h3 class="small"><span class="mono" style="color:#C0452F">③</span> 目标漂移</h3><p class="small">每一步都合理，整体却跑偏——任务边界不是它的概念</p><p class="small mt" style="color:#6E6A61">例：修一个 500，重构了整个错误处理</p></div>
+    <div class="card warn"><h3 class="small"><span class="mono" style="color:#C0452F">④</span> 长任务失忆</h3><p class="small">它忘得很安静，不会提示"那条约束已经丢了"</p><p class="small mt" style="color:#6E6A61">例：重复读同一文件、违反早先约定</p></div>
+    <div class="card warn"><h3 class="small"><span class="mono" style="color:#C0452F">⑤</span> 不可控改动</h3><p class="small">对它来说"能改"和"该改"是一回事</p><p class="small mt" style="color:#6E6A61">例：顺手改了 CI 配置和公共基类</p></div>
+    <div class="card warn"><h3 class="small"><span class="mono" style="color:#C0452F">⑥</span> 结果难验证</h3><p class="small">自评也是概率输出——考生批自己的卷子</p><p class="small mt" style="color:#6E6A61">例：宣布"已完成"，日志里没跑过一次命令</p></div>
+    <div class="card warn"><h3 class="small"><span class="mono" style="color:#C0452F">⑦</span> 成本延迟</h3><p class="small">能力按 token 计费：轮数 × 每轮重复送的上下文</p><p class="small mt" style="color:#6E6A61">例：同一榜单口径，每任务 $0.49 - $15.47</p></div>
+    <div class="card ok"><h3 class="small">读法</h3><p class="small">后页逐个拆解：现象→根源（回溯 P7 四缺陷）→对策→<b>检验数字</b>。可当排障索引用。</p></div>
+  </div>
+</section>
+
+<!-- P26 顽疾① 幻觉 -->
+<section class="slide">
+  <div class="kicker">CH3 · 顽疾 × 对策 2/11</div>
+  <h1 class="tt">顽疾① 幻觉：<span class="warnc">最像的地方，就是最假的地方</span></h1>
+  <div class="half">
+    <div style="flex:1.1">
+      <div class="card warn mb"><h3>它不是在骗你，它是在猜</h3>
+        <pre class="term" style="font-size:12px">❯ 怎么配置这个选项？
+  参数记忆里没有这个字段
+  → 用"最像"的字段名去拼
+  → 自信输出 timeoutMs: 3000
+<span class="o">真实情况：叫 timeout（毫秒）
+你写的 timeoutMs 会被静默忽略，
+超时永远不生效</span></pre>
+        <p class="small mt">危险在于：格式完美、语法正确、语义也像——<b>唯一的问题是它不存在</b>。四种形态：不存在的 API/参数、编造的文档链接、真实细节的嫁接、"形状正确"的伪代码。</p></div>
+      <div class="card acc"><h3>同一件事，三种语气，同一个错</h3>
+        <ul class="ls"><li>"用 timeoutMs 即可。"——最自信，最危险</li><li>"我记得应该是 timeoutMs。"——加了不确定，但仍没查</li><li class="okc">"我先看一下文档再回答。"——唯一正确的反应</li></ul></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card ok mb"><h3>对策：把"真值"接进循环</h3>
+        <div class="step"><span class="sn">S1</span><p class="small"><b>给外部真值</b>：读源码、查官方文档、跑 --help，不靠记忆</p></div>
+        <div class="step"><span class="sn">S2</span><p class="small"><b>强制引用</b>：关键结论必须带 文件:行号 或 URL，否则不算数</p></div>
+        <div class="step"><span class="sn">S3</span><p class="small"><b>允许说不知道</b>：系统提示里把"需要确认"设成合法输出</p></div>
+        <div class="step"><span class="sn">S4</span><p class="small"><b>交叉验证</b>：关键结论要求"检索+执行"两条独立路径一致</p></div></div>
+      <pre class="term" style="font-size:11.5px"><span class="c"># 系统提示里的一行，能改变很多</span>
+<span class="o">反例</span> 始终给出确定答案，不要含糊。
+<span class="g">正例</span> 不确定时先查证；查不到就写
+     "未确认"并说明查了什么。
+     禁止凭印象给出 API 签名。</pre></div>
+  </div>
+  <div class="card gray mt"><p class="small"><b>检验：</b>抽 20 条关键结论，统计"有来源且来源可打开"的比例——目标 ≥90%。</p></div>
+</section>
+
+<!-- P27 顽疾② 知识过期 -->
+<section class="slide">
+  <div class="kicker">CH3 · 顽疾 × 对策 3/11</div>
+  <h1 class="tt">顽疾② 知识过期：<span class="warnc">训练截止日之后的世界，它一无所知</span></h1>
+  <div class="row" style="flex:1">
+    <div style="flex:1.1">
+      <div class="card warn mb"><h3>更麻烦的是：它"更确信旧的"</h3>
+        <p class="small">旧知识在语料里出现得更多 → 概率更高。旧写法"曾经是对的"，所以每一条过期错误都<b>看起来对</b>：废弃 API（编译告警它说没问题）、旧配置项、三年前的方案。</p>
+        <pre class="term" style="margin-top:6px;font-size:11.5px">deprecated: useEffect deps 省略
+deprecated: class Config
+deprecated: webpack 4 的 CommonJS
+<span class="o">一个可验证的推断：让它写"最新的写法"，
+再问"这是哪一年的"——两个答案常互相矛盾</span></pre></div>
+      <div class="card acc"><h3>这不是"记性差"，是"时间差"</h3>
+        <p class="small">权重在训练结束时冻结（P9）。它没有"我可能过期了"的元认知——两条时钟的同步，只能由你补上。</p></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card ok mb"><h3>对策：四件小事，效果最大</h3>
+        <div class="step"><span class="sn">S1</span><p class="small"><b>版本化知识注入</b>：当前版本+关键变更做成可检索条目</p></div>
+        <div class="step"><span class="sn">S2</span><p class="small"><b>工具即真相</b>：先读 package.json / lock，再写代码</p></div>
+        <div class="step"><span class="sn">S3</span><p class="small"><b>文档随仓库走</b>：AGENTS.md、ADR 与代码同分支</p></div>
+        <div class="step"><span class="sn">S4</span><p class="small"><b>时间声明</b>：系统提示写清今天日期 + "知识可能过期需核实"</p></div></div>
+      <pre class="term" style="font-size:11.5px"><span class="c"># 常驻层里，值得占这几行</span>
+今天我们用： react 19.2 · pydantic 2.11
+已废弃（禁止）： useEffect 旧写法 ·
+                class Config
+不确定时：先读 package.json 与 docs/</pre></div>
+  </div>
+</section>
+
+<!-- P28 顽疾③ 目标漂移 -->
+<section class="slide">
+  <div class="kicker">CH3 · 顽疾 × 对策 4/11</div>
+  <h1 class="tt">顽疾③ 目标漂移：<span class="warnc">局部最优，整体跑偏</span></h1>
+  <div class="half">
+    <div style="flex:1.1">
+      <div class="card warn mb"><h3>它没有"任务边界"这个概念</h3>
+        <pre class="term" style="font-size:12px">计划路径：只修 /orders 的 500
+step 8:  "先重构一下再说"
+step 19: "顺手统一命名"
+step 31: "把测试也改了，让它们迁就实现"
+<span class="o">实际路径：重构了整个错误处理
+每一轮局部都合理，整体不在任务里</span></pre>
+        <p class="small mt">三种漂移：顺手重构、顺手统一（改名/搬目录）、顺手改测试。<b>根源</b>：每轮只见局部上下文 + "多做显得有帮助"的对齐倾向 + 没有硬性完成定义。</p></div>
+      <div class="card ok"><h3>对策：四步把边界钉住</h3>
+        <div class="step"><span class="sn">S1</span><p class="small"><b>规格先行</b>：改什么/不改什么/怎么验收，人确认后再动手</p></div>
+        <div class="step"><span class="sn">S2</span><p class="small"><b>验收前置</b>：完成条件=可执行命令，不是"看起来对"</p></div>
+        <div class="step"><span class="sn">S3</span><p class="small"><b>最小改动</b>：明确"不相关文件禁止修改"，diff 逐条检查</p></div>
+        <div class="step"><span class="sn">S4</span><p class="small"><b>每步复述</b>：小步完成后复述做了什么、是否偏离</p></div></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card gray" style="height:100%"><h3>任务卡模板（直接抄）</h3>
+        <pre class="term" style="margin-top:8px;font-size:12px"><span class="g">目标</span>  /orders 的 500 不再复现
+<span class="g">范围</span>  app/orders/* · tests/orders/*
+<span class="o">不动</span>  错误处理基类 · 路由注册
+      · 其他模块
+<span class="g">验收</span>  pnpm test orders
+      && 手工复现 3 次</pre>
+        <div class="card ok mt"><p class="small"><b>好信号</b>：改动集中在"范围"内。<br><b>坏信号</b>：出现"顺手"改了范围外文件。</p></div>
+        <p class="small mt"><b>检验</b>：统计 diff 行数/涉及文件数，"无关改动占比"越接近 0 越好。<br><b>规格写不出来 = 任务没想清楚</b>，这时让它动手，漂移是必然的。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- P29 顽疾④ 长任务失忆 -->
+<section class="slide">
+  <div class="kicker">CH3 · 顽疾 × 对策 5/11</div>
+  <h1 class="tt">顽疾④ 长任务失忆：<span class="warnc">它忘得很安静</span></h1>
+  <div class="half">
+    <div style="flex:1.1">
+      <div class="card warn mb"><h3>上下文是固定预算，任务越长越紧</h3>
+        <svg viewBox="0 0 440 150" style="width:100%">
+          <rect x="20" y="20" width="400" height="26" rx="5" fill="#E9E3D5"/>
+          <rect x="20" y="20" width="150" height="26" rx="5" fill="#D97757" opacity=".25"/>
+          <text x="30" y="38" font-size="11.5">目标 · 约束 · 决策</text>
+          <rect x="170" y="20" width="250" height="26" rx="5" fill="#C0452F" opacity=".3"/>
+          <text x="180" y="38" font-size="11.5" fill="#C0452F">工具输出（占最多）→ 挤出早期约束</text>
+          <line x1="330" y1="10" x2="330" y2="56" stroke="#C0452F" stroke-width="2" stroke-dasharray="4,3"/>
+          <text x="336" y="14" font-size="10.5" fill="#C0452F">压缩触发</text>
+          <text x="20" y="70" font-size="11.5" fill="#6E6A61">step 0 ────────────────────────→ step 60</text>
+          <text x="20" y="92" font-size="12" fill="#23211E">三个高频信号：</text>
+          <text x="20" y="114" font-size="12.5">① 重复读同一文件、重复跑同一条命令</text>
+          <text x="20" y="134" font-size="12.5">② 反复问已答过的问题 ③ 违反早先约定且理直气壮</text>
+        </svg></div>
+      <div class="card acc"><h3>根源：三重挤压</h3>
+        <p class="small">窗口是硬预算（P8）+ 中间信息注意力更弱 + 压缩有损（P39）。<b>它不会提示"那条约束已经丢了"。</b></p></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card ok mb"><h3>对策：把"该记住的"搬出上下文</h3>
+        <div class="step"><span class="sn">S1</span><p class="small"><b>外部记忆</b>：任务清单/决策日志/进度文件落盘</p></div>
+        <div class="step"><span class="sn">S2</span><p class="small"><b>结构化交接</b>：每阶段末尾生成交接摘要</p></div>
+        <div class="step"><span class="sn">S3</span><p class="small"><b>锚点复述</b>：关键约束在"开头+当前轮"各出现一次</p></div>
+        <div class="step"><span class="sn">S4</span><p class="small"><b>可检索历史</b>：存成记忆，不全量重放</p></div></div>
+      <pre class="term" style="font-size:11.5px"><span class="c">## 阶段 2 交接</span>
+<span class="g">目标</span>   /orders 500 可复现可测
+<span class="g">已完成</span> 加失败用例 · 定位到 retry 超时
+<span class="o">约束</span>   不改 public 接口 · 不动错误基类
+<span class="g">下一步</span> 改 retry 等待策略，跑 orders 测试
+<span class="o">坑</span>     先跑 pnpm test orders 再全量（慢）</pre></div>
+  </div>
+  <div class="card gray mt"><p class="small"><b>为什么摘要比全文重放有效</b>：上下文每多 10 万字，中段可用性掉一截（lost in the middle）——摘要不是省 token，是<b>把重要信息搬到注意力更好的位置</b>。<b>检验</b>：长任务"重复动作率"与"约束违反次数"都应下降。</p></div>
+</section>
+
+<!-- P30 顽疾⑤ 不可控改动 -->
+<section class="slide">
+  <div class="kicker">CH3 · 顽疾 × 对策 6/11</div>
+  <h1 class="tt">顽疾⑤ 不可控改动：<span class="warnc">能力越强，越需要绳子</span></h1>
+  <div class="half">
+    <div style="flex:1.1">
+      <div class="card warn mb"><h3>"能改"和"该改"是两回事</h3>
+        <p class="small">它不理解"所有权"，没有"这不该碰"的直觉。五档之外的一切危险都来自同一个缺口：<b>动作没有按危险度分级</b>。</p></div>
+      <div class="card ok" style="flex:1"><h3>三档闸门 + 一个禁区</h3>
+        <div class="row mt" style="gap:10px">
+          <div class="card" style="flex:1"><p class="small"><span class="tag n">第1档 只读</span><br>读文件/grep/git log<br><b>默认全放行</b>——读错不会造成事故</p></div>
+          <div class="card" style="flex:1"><p class="small"><span class="tag">第2档 写入</span><br>改仓库文件/跑测试/装本地依赖<br><b>工作分支+沙箱内</b>，改动留 diff</p></div>
+          <div class="card" style="flex:1"><p class="small"><span class="tag w">第3档 高危</span><br>删除/force push/改CI与密钥<br><b>强制人工确认</b>，先展示完整命令</p></div>
+        </div>
+        <div class="card warn mt"><p class="small"><b>禁区 · 永不自动执行</b>：导出密钥、改生产凭据、带用户数据对外发请求——不是"确认一下"，是"根本不该由它做"。</p></div></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card gray" style="height:100%"><h3>执行序：三个 STOP</h3>
+        <div class="flow mt" style="flex-direction:column;gap:7px">
+          <div class="fbox"><b>STOP 1 先开分支/打快照</b><small>出事能退，才敢让它跑长任务</small></div>
+          <div class="fbox"><b>STOP 2 先出 diff，不直接执行</b><small>看清楚要改什么，再放行</small></div>
+          <div class="fbox"><b>STOP 3 高危命令人看清再放</b><small>展示完整命令，不折叠</small></div>
+          <div class="fbox" style="border-color:#4A7C59"><b style="color:#4A7C59">ALLOW read · grep · git log</b><small>只读动作不打扰人</small></div>
+        </div>
+        <p class="small mt"><b>落地</b>：仓库根放 <code class="inl">.agent/policy.yaml</code>，CI 与本地同一份。<b>检验</b>：被拒绝动作数、回滚次数（异常升高=策略太松或模型越界）。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- P31 顽疾⑥ 结果难验证 -->
+<section class="slide">
+  <div class="kicker">CH3 · 顽疾 × 对策 7/11</div>
+  <h1 class="tt">顽疾⑥ 结果难验证：<span class="warnc">它的自评也是猜出来的</span></h1>
+  <div class="half">
+    <div style="flex:1.1">
+      <div class="card warn mb"><h3>让考生批自己的卷子</h3>
+        <p class="small">模型只有"文本相似度"，没有"运行结果"；自信程度与正确率不挂钩。"看起来对"型事故：类型对、注释对、命名对，一跑就错；说"已完成"但日志里没有任何一次命令。</p>
+        <div class="row mt">
+          <div class="card warn" style="flex:1"><p class="small"><b>模型自评</b><br>≈ 再猜一次</p></div>
+          <div class="card" style="flex:1"><p class="small"><b>另一模型复核</b><br>独立视角，但仍无真值</p></div>
+          <div class="card ok" style="flex:1"><p class="small"><b>跑测试/构建</b><br>外部程序给答案 ✓</p></div>
+        </div></div>
+      <div class="card ok"><h3>对策：把"完成"的定义交给程序</h3>
+        <div class="step"><span class="sn">S1</span><p class="small"><b>测试即规格</b>：先确认测试再实现（红→绿；首轮就绿？可能测试没测到东西）</p></div>
+        <div class="step"><span class="sn">S2</span><p class="small"><b>验证回路内置</b>：lint/类型/单测/构建/e2e 全是观察信号</p></div>
+        <div class="step"><span class="sn">S3</span><p class="small"><b>独立复核</b>：换会话/换模型 review，避免自己验自己</p></div>
+        <div class="step"><span class="sn">S4</span><p class="small"><b>人工验收清单</b>：把"完成"拆成可打勾项</p></div></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card gray" style="height:100%"><h3>验收清单（贴在任务卡后面）</h3>
+        <pre class="term" style="margin-top:8px;font-size:12px">[ ] pnpm lint        → 0 error
+[ ] pnpm tsc --noEmit → 0 error
+[ ] pnpm test orders → 全绿
+    （含新增失败用例）
+[ ] 手工复现 3 次 → 400 不再出现
+[ ] diff 仅限范围内文件
+[ ] 无新增依赖/配置变更</pre>
+        <p class="small mt"><b>"通过测试"≠"正确"</b>——测试也是人写的。但"没有通过程序"一定不正确，这就是它作为下限的价值。<br><b>检验</b>：首次通过率（first-pass）+ 返工率，合起来才是真实质量。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- P32 顽疾⑦ 成本延迟 -->
+<style>.slide:nth-of-type(32) .barrow{height:30px}</style>
+<section class="slide">
+  <div class="kicker">CH3 · 顽疾 × 对策 8/11</div>
+  <h1 class="tt">顽疾⑦ 成本与延迟：<span class="acc">能力是按 token 计费的</span></h1>
+  <div class="row" style="flex:1">
+    <div style="flex:1.15">
+      <div class="card acc mb"><h3>每任务平均 API 花费（Coding Agent Index 口径，2026-11-18）</h3>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
+          <div class="barrow"><div class="lbl">Claude Code + Fable 5.2</div><div class="track"><div class="fill" style="width:100%"></div></div><div class="val">$15.47</div></div>
+          <div class="barrow"><div class="lbl">Claude Code + Sonnet 5.5</div><div class="track"><div class="fill" style="width:63%"></div></div><div class="val">$9.75</div></div>
+          <div class="barrow"><div class="lbl">Grok Build + Grok 4.7</div><div class="track"><div class="fill" style="width:50%"></div></div><div class="val">$7.75</div></div>
+          <div class="barrow"><div class="lbl">Antigravity + Gemini 4 C.</div><div class="track"><div class="fill" style="width:35%"></div></div><div class="val">$5.41</div></div>
+          <div class="barrow"><div class="lbl">Claude Code + Opus 5.5</div><div class="track"><div class="fill" style="width:34.5%"></div></div><div class="val">$5.35</div></div>
+          <div class="barrow"><div class="lbl">Codex + GPT-6.2 Astra</div><div class="track"><div class="fill" style="width:33%"></div></div><div class="val">$5.12</div></div>
+          <div class="barrow"><div class="lbl">Muse Code + Wonder Full</div><div class="track"><div class="fill" style="width:19%"></div></div><div class="val">$2.94</div></div>
+          <div class="barrow"><div class="lbl">Codex + GPT-6.2 Sol</div><div class="track"><div class="fill" style="width:8.7%"></div></div><div class="val">$1.34</div></div>
+          <div class="barrow"><div class="lbl">Anthropic + Haiku 5.5</div><div class="track"><div class="fill" style="width:3.2%"></div></div><div class="val">$0.49</div></div>
+        </div>
+        <p class="note">同Index≠同价格：同为 58 分的 Fable 与 Opus 差 3 倍。钱花在哪：轮数 × 每轮重复送的上下文。</p></div>
+    </div>
+    <div style="flex:.85">
+      <div class="card warn mb"><h3>钱怎么被烧掉的</h3>
+        <ul class="ls warnc"><li class="small">长会话后期：<b>90% 花费在重发旧上下文</b></li><li class="small">无效重试：同一任务反复失败再跑</li><li class="small">档位错配：简单改动烧满最高档</li></ul></div>
+      <div class="card ok"><h3>对策：档位路由 + 预算闸门</h3>
+        <div class="step"><span class="sn">S1</span><p class="small"><b>按任务分级路由</b>：改写/解释低档，重构/调试升档（P12）</p></div>
+        <div class="step"><span class="sn">S2</span><p class="small"><b>预算闸门</b>：单任务设 token/金额上限，超限暂停转人工</p></div>
+        <div class="step"><span class="sn">S3</span><p class="small"><b>缓存友好排列</b>：稳定前缀（系统提示/记忆）放前面</p></div>
+        <div class="step"><span class="sn">S4</span><p class="small"><b>减少无效重试</b>：失败带报错回流，不是原样重试</p></div></div>
+      <p class="small mt"><b>检验</b>：每通过任务的 $、每任务轮次、缓存命中率。</p></div>
+  </div>
+</section>
+
+<!-- P33 对策总表一 -->
+<section class="slide">
+  <div class="kicker">CH3 · 顽疾 × 对策 9/11 · 核心</div>
+  <h1 class="tt">对策总表（一）：<span class="acc">知识与目标</span></h1>
+  <table class="t" style="font-size:13px;flex:1">
+    <tr><th style="width:150px">问题</th><th>首要对策</th><th>补充手段</th><th style="width:120px">Harness 落点</th></tr>
+    <tr><td><b>① 幻觉</b></td><td><b>工具查真相 + 强制引用</b>：关键结论必须附来源（文件:行号/URL），否则不计入</td><td class="small">不确定性显式化 · 检索与执行两条路径交叉验证</td><td class="small">② 工具<br>⑤ 验证</td></tr>
+    <tr><td><b>② 知识过期</b></td><td><b>版本化知识注入</b>：当前版本+关键变更做成可检索条目</td><td class="small">先读锁文件 · 文档随仓库走 · 系统提示写日期</td><td class="small">④ 记忆<br>② 工具</td></tr>
+    <tr><td><b>③ 目标漂移</b></td><td><b>规格先行 + 验收前置</b>：改什么/不改什么/怎么验收</td><td class="small">最小改动规则 · 每步复述是否偏离目标</td><td class="small">① 装配<br>⑤ 验证</td></tr>
+    <tr><td><b>④ 长任务失忆</b></td><td><b>外部记忆</b>：任务清单/决策日志/进度文件</td><td class="small">阶段交接摘要 · 关键约束锚点复述 · 可检索历史</td><td class="small">④ 记忆<br>① 装配</td></tr>
+  </table>
+  <div class="card acc mt"><p><b>共同规律：前四个问题全部落在"它此刻看到的信息对不对、够不够"。</b>共同手法：把信息变成<b>可检索、可引用、可核对</b>的东西。共同零件：①装配 + ④记忆 + ⑤验证 三件套。</p></div>
+</section>
+
+<!-- P34 对策总表二 -->
+<section class="slide">
+  <div class="kicker">CH3 · 顽疾 × 对策 10/11 · 核心</div>
+  <h1 class="tt">对策总表（二）：<span class="acc">安全、验证与成本</span></h1>
+  <table class="t" style="font-size:13px">
+    <tr><th style="width:150px">问题</th><th>首要对策</th><th>补充手段</th><th style="width:110px">Harness 落点</th></tr>
+    <tr><td><b>⑤ 不可控改动</b></td><td><b>权限三档 + 沙箱</b>：只读/写入/高危，按目录与命令白名单</td><td class="small">先 diff 后执行 · 分支与快照可回滚 · 高危转人工</td><td class="small">③ 权限沙箱</td></tr>
+    <tr><td><b>⑥ 结果难验证</b></td><td><b>测试即规格 + 验证回路</b>：完成条件是可执行命令</td><td class="small">独立复核（换会话/换模型）· 人工验收清单</td><td class="small">⑤ 验证</td></tr>
+    <tr><td><b>⑦ 成本与延迟</b></td><td><b>档位路由 + 预算闸门</b>：简单任务低档，超预算即暂停</td><td class="small">缓存命中 · 任务分级 · 减少无效重试</td><td class="small">① 装配<br>⑥ 观测</td></tr>
+  </table>
+  <div class="card acc mt"><p><b>结论：七条对策，五个零件（①装配 ②工具 ③沙箱 ④记忆 ⑤验证⑥观测）——没有一件住在提示词里。</b>这就是"提示词技巧"不够的原因：它解决不了跨会话、跨人的问题。</p></div>
+  <div class="grid3" style="margin-top:10px">
+    <div class="card"><h3 class="small">① 装配扛 ③④⑦</h3><p class="small">常驻层≤几十行 · 工具输出先摘要再入 · 压缩在 60-70% 触发<br><b>指标</b>：无关内容占比、规则命中率</p></div>
+    <div class="card"><h3 class="small">② 工具扛 ①②</h3><p class="small">描述写"何时用" · 数量控制在一屏 · 返回值截断<br><b>指标</b>：结论引用可打开率</p></div>
+    <div class="card"><h3 class="small">⑤⑥ 验证观测扛 ①③⑥⑦</h3><p class="small">验证器必须是外部程序 · 失败带报错回流 · 每步留痕可回放<br><b>指标</b>：首次通过率、每通过任务花费</p></div>
+  </div>
+</section>
+
+<!-- P35 CH4章节页 -->
+<section class="slide sec">
+  <div class="cn">04</div>
+  <h1>上下文工程</h1>
+  <p class="sub" style="font-size:17px">窗口是预算，注意力是稀缺资源——七顽疾里一半的病灶在这里</p>
+  <div class="qs" style="width:660px">
+    <div class="q"><span class="n">Q1</span>一次请求的七块拼图，谁在偷预算（P36）</div>
+    <div class="q"><span class="n">Q2</span>"爆"的不是长度，是被稀释的全过程（P37）</div>
+    <div class="q"><span class="n">Q3</span>压缩的四种手段、各自丢什么（P38-P39）</div>
+  </div>
+</section>
+
+<!-- P36 七块拼图 -->
+<section class="slide">
+  <div class="kicker">CH4 · 上下文工程 1/6</div>
+  <h1 class="tt">上下文是<span class="acc">七块拼图共用一个预算</span></h1>
+  <p class="sub">多数人只想到"对话历史"，但真正吃掉预算的往往是你看不见的那两块（示意占比）</p>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:4px 0">
+    <div class="barrow" style="height:30px;grid-template-columns:150px 1fr 200px"><div class="lbl" style="font-size:14px;font-weight:600"><span class="rk" style="color:#fff;background:#D97757;border-radius:4px;text-align:center">1</span>系统提示</div><div class="track" style="height:20px"><div class="fill" style="width:6%"></div></div><div class="small">运维/框架 · 小而关键</div></div>
+    <div class="barrow" style="height:30px;grid-template-columns:150px 1fr 200px"><div class="lbl" style="font-size:14px;font-weight:600"><span class="rk" style="color:#fff;background:#A2552F;border-radius:4px;text-align:center">2</span>工具定义</div><div class="track" style="height:20px"><div class="fill" style="width:14%;background:#A2552F"></div></div><div class="small">Harness · 工具越多越大</div></div>
+    <div class="barrow" style="height:30px;grid-template-columns:150px 1fr 200px"><div class="lbl" style="font-size:14px;font-weight:600"><span class="rk" style="color:#fff;background:#B5522F;border-radius:4px;text-align:center">3</span>项目规则</div><div class="track" style="height:20px"><div class="fill" style="width:8%;background:#B5522F"></div></div><div class="small">团队 · AGENTS.md</div></div>
+    <div class="barrow" style="height:30px;grid-template-columns:150px 1fr 200px"><div class="lbl" style="font-size:14px;font-weight:600"><span class="rk" style="color:#fff;background:#C15F3C;border-radius:4px;text-align:center">4</span>对话历史</div><div class="track" style="height:20px"><div class="fill" style="width:22%;background:#C15F3C"></div></div><div class="small">双方 · 轮次越多越大</div></div>
+    <div class="barrow" style="height:30px;grid-template-columns:150px 1fr 200px"><div class="lbl" style="font-size:14px;font-weight:600"><span class="rk" style="color:#fff;background:#C0452F;border-radius:4px;text-align:center">5</span>工具返回</div><div class="track" style="height:20px"><div class="fill" style="width:38%;background:#C0452F"></div></div><div class="small">工具 · 通常最大 ← 稀释主力</div></div>
+    <div class="barrow" style="height:30px;grid-template-columns:150px 1fr 200px"><div class="lbl" style="font-size:14px;font-weight:600"><span class="rk" style="color:#fff;background:#8A6A1F;border-radius:4px;text-align:center">6</span>附件与引用</div><div class="track" style="height:20px"><div class="fill" style="width:8%;background:#8A6A1F"></div></div><div class="small">你/Harness · 日志片段</div></div>
+    <div class="barrow" style="height:30px;grid-template-columns:150px 1fr 200px"><div class="lbl" style="font-size:14px;font-weight:600"><span class="rk" style="color:#fff;background:#5E7048;border-radius:4px;text-align:center">7</span>即将生成的输出</div><div class="track" style="height:20px"><div class="fill" style="width:4%;background:#5E7048"></div></div><div class="small">模型 · 也占窗口</div></div>
+  </div>
+  <div class="card acc mt"><p><b>三个反直觉：</b>① 对话只占约 1/5，你"说的话"不是大头；② 工具返回占 38%——一次全量测试日志 ≈ 上万 token；③ 输出本身也占预算，"让它简短"直接省窗口。自查命令：Claude Code 里 <code class="inl">/context</code> 看实时占比。</p></div>
+</section>
+
+<!-- P37 稀释 -->
+<section class="slide">
+  <div class="kicker">CH4 · 上下文工程 2/6</div>
+  <h1 class="tt">上下文"爆"的不是长度，<span class="warnc">是被稀释的全过程</span></h1>
+  <div class="row" style="flex:1">
+    <div style="flex:1.15">
+      <div class="row mb">
+        <div class="card ok" style="flex:1"><h3 class="small">STEP 3 · 上下文短</h3>
+          <p class="small mono" style="margin-top:4px">规则：不许改 public 接口<br>read orders.ts · run test · grep retry</p>
+          <p class="small mt okc">规则被"读到"的概率：高</p></div>
+        <div class="card warn" style="flex:1.3"><h3 class="small">STEP 42 · 上下文灌满</h3>
+          <p class="small mono" style="margin-top:4px;color:#A8A49C">规则（被挤到上方、变淡）<br>npm output · 1,240 行 · test log · 3,900 行<br>read config.yaml（全文）· git diff（全量）…</p>
+          <p class="small mt warnc">规则被读到的概率：低，且它不会告诉你</p></div>
+      </div>
+      <div class="grid2">
+        <div class="card warn"><h3 class="small">四种体感</h3><ul class="ls warnc"><li class="small">越到后面越"不听话"</li><li class="small">反复问已经说过的事</li><li class="small">首 token 越来越慢</li><li class="small">"忘了"早先的约束</li></ul></div>
+        <div class="card acc"><h3 class="small">机理</h3><p class="small">注意力是预算：内容越多，每条分到的注意力越少（P8 U 型曲线）。工具输出把规则"淹没"——这就是稀释。</p></div>
+      </div>
+    </div>
+    <div style="flex:.85">
+      <div class="card gray" style="height:100%"><h3>占用率 vs 有效注意力</h3>
+        <svg viewBox="0 0 420 250" style="width:100%;margin-top:6px">
+          <line x1="40" y1="210" x2="400" y2="210" stroke="#C9C2B2" stroke-width="2"/>
+          <line x1="40" y1="210" x2="40" y2="20" stroke="#C9C2B2" stroke-width="2"/>
+          <path d="M 50 45 Q 150 100 220 150 T 390 175" fill="none" stroke="#C0452F" stroke-width="3"/>
+          <path d="M 50 45 Q 150 90 220 110 T 390 120" fill="none" stroke="#4A7C59" stroke-width="3" stroke-dasharray="6,4"/>
+          <text x="55" y="40" font-size="12" fill="#23211E" font-weight="bold">规则遵从率</text>
+          <text x="235" y="170" font-size="12" fill="#C0452F" font-weight="bold">不管理：随占用衰减</text>
+          <text x="230" y="105" font-size="12" fill="#4A7C59" font-weight="bold">压缩+落盘：基本守住</text>
+          <text x="45" y="230" font-size="11" fill="#6E6A61">0%</text>
+          <text x="380" y="230" font-size="11" fill="#6E6A61">100% 占用</text>
+          <line x1="278" y1="40" x2="278" y2="210" stroke="#D97757" stroke-width="2" stroke-dasharray="5,4"/>
+          <text x="240" y="35" font-size="11.5" fill="#D97757" font-weight="bold">60-70% 触发压缩</text>
+        </svg>
+        <p class="small mt">工程阈值：占用 60-70% 主动压缩（P29 顽疾④对策）。等到 90% 才动手，已经丢了。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- P38 压缩四手段 -->
+<section class="slide">
+  <div class="kicker">CH4 · 上下文工程 3/6</div>
+  <h1 class="tt">压缩怎么压：四种手段，四种代价</h1>
+  <p class="sub">所有压缩都是有损的。工程上要做的不是"不丢"，而是<b>先决定丢什么可以接受</b></p>
+  <table class="t" style="font-size:13.5px;flex:1">
+    <tr><th style="width:130px">手段</th><th>做法</th><th style="width:190px">保住了</th><th style="width:210px">丢了</th><th style="width:170px">适用</th></tr>
+    <tr><td><b>① 截断</b></td><td class="small">只保留最近 N 轮 / 截首尾，超出部分丢弃</td><td class="small">最近的对话与最新报错</td><td class="small warnc">最早的约束与需求原文</td><td class="small">短任务、探索性会话</td></tr>
+    <tr><td><b>② 摘要</b></td><td class="small">用小模型把历史压成几段话（/compact）</td><td class="small">梗概、目标、阶段性结论</td><td class="small warnc">精确标识符、行号、报错原文</td><td class="small">长任务中段、阶段切换</td></tr>
+    <tr><td><b>③ 分层保留</b></td><td class="small">规则/目标常驻，历史可压，工具输出先摘要再入</td><td class="small okc">规则与目标（最高价值）</td><td class="small">中间过程细节</td><td class="small">几乎所有长任务</td></tr>
+    <tr><td><b>④ 外部化+检索回填</b></td><td class="small">历史落盘成文件/记忆，需要时按关键词取回</td><td class="small okc">几乎全部（可重新取回）</td><td class="small">召回延迟；索引要维护</td><td class="small">跨会话、跨天任务</td></tr>
+  </table>
+  <div class="card ok mt"><p><b>实践组合：</b>③ 为默认骨架，② 为中段瘦身，④ 承接跨会话，① 只用于抛弃型会话。压缩前给<b>显式保留清单</b>（"务必保留：xx 约定 / yy 接口签名"）。</p></div>
+</section>
+
+<!-- P39 压缩丢什么 -->
+<section class="slide">
+  <div class="kicker">CH4 · 上下文工程 4/6</div>
+  <h1 class="tt">压缩之后丢掉了什么：<span class="warnc">摘要 ≠ 事实</span></h1>
+  <div class="row" style="flex:1">
+    <div style="flex:1.2">
+      <div class="row mb">
+        <div class="card" style="flex:1"><h3 class="small">压缩前 · 原始记录</h3>
+          <pre class="term" style="font-size:11.5px;margin-top:6px"><span class="o">约束</span>  改用 v2 API，必须
+      兼容旧参数 page=<span style="text-decoration:line-through">……</span>
+read retry.go:42  <span class="c">(报错原文)</span>
+<span class="o">决定</span>  弃用方案B，因为
+      <span style="text-decoration:line-through">……</span>不兼容锁文件
+run test → 3 failed <span class="c">(日志4KB)</span></pre></div>
+        <div style="display:flex;align-items:center;color:#D97757;font-weight:800;font-size:20px">→</div>
+        <div class="card warn" style="flex:1"><h3 class="small">压缩后 · 摘要</h3>
+          <pre class="term" style="font-size:11.5px;margin-top:6px">"在做缓存优化，
+  处理过一些测试问题，
+  后续继续完善"</pre>
+          <p class="small mt warnc">约束变陈述，行号没了，<br>"弃用方案B"的理由蒸发</p></div>
+      </div>
+      <div class="card warn mb"><h3>三类系统性损失</h3>
+        <ul class="ls warnc"><li class="small"><b>细节</b>：精确行号、变量名、参数签名 → "记得改过，不知道在哪"</li><li class="small"><b>约束弱化</b>："必须兼容 v2"被压成"做了 v2"——命令变陈述，失去约束力</li><li class="small"><b>隐性共识蒸发</b>："为什么不用方案 B"没进摘要 → 它又把 B 提回来</li></ul></div>
+      <div class="card"><h3>更隐蔽的：摘要也会"编"</h3>
+        <p class="small">摘要由模型生成，同样有幻觉风险；写错一个词（"进行中" vs "已删除"）就污染后续所有轮次。<b>压缩一次 = 引入一次失真机会。</b></p></div>
+    </div>
+    <div style="flex:.8">
+      <div class="card gray mb"><h3>事故复现：幽灵代码</h3>
+        <pre class="term" style="font-size:11.5px;margin-top:6px"><span class="o">step20</span> 删除 legacyCache 模块
+<span class="o">step40</span> 自动压缩 → 摘要写：
+       "缓存逻辑优化(进行中)"
+<span class="g">step41</span> "继续完善缓存，我恢复了
+       legacyCache 并扩展…"
+<span class="o">已删除的代码回来了</span></pre></div>
+      <div class="card ok" style="flex:1"><h3>止损规则</h3>
+        <ul class="ls okc"><li class="small">压缩前给显式保留清单</li><li class="small">关键事实落盘（git/文件），不依赖窗口存活</li><li class="small">压缩后立刻跑测试验证现场一致</li><li class="small">小步多压 &gt; 一次救火式大压</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- P40 三层装配 -->
+<section class="slide">
+  <div class="kicker">CH4 · 上下文工程 5/6</div>
+  <h1 class="tt">上下文工程：<span class="acc">三层装配 + 四条原则</span></h1>
+  <div class="row" style="flex:1">
+    <div style="flex:1.1">
+      <div class="card acc mb"><h3>三层装配（每轮请求的组织方式）</h3>
+        <div class="step"><span class="sn">常驻层</span><p class="small"><b>≤几十行</b>：系统提示、项目规则、今天日期、关键禁区。每轮都在，缓存友好。规则越少越被遵守。</p></div>
+        <div class="step"><span class="sn">场景层</span><p class="small">当前任务的任务卡、相关文件、检索结果。任务开始时装入，结束即清。</p></div>
+        <div class="step"><span class="sn">临时层</span><p class="small">工具输出、日志、报错。用完就压/丢，先摘要再入。</p></div></div>
+      <div class="card ok"><h3>四条原则</h3>
+        <ul class="ls okc">
+          <li><b>预算思维</b>：窗口 200K ≠ 可用 200K，按 60-70% 规划</li>
+          <li><b>位置思维</b>：关键约束放开头/结尾，不埋中段（P8）</li>
+          <li><b>新鲜思维</b>：重复内容放前缀吃缓存；易变内容放尾部</li>
+          <li><b>引用思维</b>：窗口里放路径+摘要，需要时再读全文</li>
+        </ul></div>
+    </div>
+    <div style="flex:.9">
+      <div class="card gray" style="height:100%"><h3>一份装配清单（可直接检查）</h3>
+        <pre class="term" style="margin-top:8px;font-size:12px"><span class="g">常驻层</span>
+  □ 系统提示 ≤ 2K
+  □ AGENTS.md ≤ 60 行
+  □ 今天的日期 + 版本清单
+<span class="g">场景层</span>
+  □ 任务卡（目标/范围/不动/验收）
+  □ 相关文件 ≤ 5 个，其余给路径
+  □ 相关记忆 top-k ≤ 5 条
+<span class="g">临时层</span>
+  □ 工具输出 >2K 先摘要
+  □ 测试日志只留失败段
+  □ 占用 60-70% 触发压缩</pre>
+        <p class="small mt">对照 P19 Agent 丢分点④"上下文越用越脏"——这份清单就是解药。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- P41 CH5章节页 -->
+<section class="slide sec">
+  <div class="cn">05</div>
+  <h1>记忆与知识库</h1>
+  <p class="sub" style="font-size:17px">上下文管"此刻"，记忆管"跨越"——跨会话、跨人、跨月</p>
+  <div class="qs" style="width:680px">
+    <div class="q"><span class="n">Q1</span>为什么压缩治不了遗忘？记忆/知识/上下文三层怎么分（P42）</div>
+    <div class="q"><span class="n">Q2</span>记忆怎么写才算"记得准、取得到、忘得掉"（P43）</div>
+    <div class="q"><span class="n">Q3</span>为什么"最好的知识库就是你的代码库"（P45）</div>
+  </div>
+</section>
+
+<!-- P42 记忆三层 -->
+<section class="slide">
+  <div class="kicker">CH5 · 记忆与知识 1/6</div>
+  <h1 class="tt">为什么需要记忆：<span class="acc">上下文 / 记忆 / 知识</span>三层各管一段</h1>
+  <table class="t" style="font-size:13px;flex:1">
+    <tr><th style="width:130px">层</th><th style="width:170px">介质 / 形态</th><th>特征：生命周期 · 容量 · 一致性</th><th style="width:210px">典型内容</th><th style="width:150px">失效方式</th></tr>
+    <tr><td><b>上下文</b></td><td class="small">窗口（内存）</td><td class="small">单会话内 · 几万~几十万 token · 会话结束即蒸发 · 会话内强一致</td><td class="small">当前任务的对话、文件、工具输出</td><td class="small">压缩有损 · 被稀释 · 超窗丢失</td></tr>
+    <tr><td><b>记忆</b></td><td class="small">文件/数据库（硬盘）</td><td class="small">跨会话 · 可积累 · 可编辑 · 可能过期</td><td class="small">决策、教训、进度、偏好、用户事实</td><td class="small">过期误导 · 检索不到 · 版本漂移</td></tr>
+    <tr><td><b>知识</b></td><td class="small">仓库/文档库（图书馆）</td><td class="small">团队共享 · 权威 · 随代码演进</td><td class="small">架构文档、ADR、规范、历史案例</td><td class="small">陈旧 · 无人维护 · 与代码脱节</td></tr>
+  </table>
+  <div class="card acc mt"><p><b>跨会话失忆（顽疾④）的根源在结构，解药也在结构：</b>压缩只救"本会话装不下"；跨会话、跨人、跨月的延续，只能靠落盘的记忆与随代码演进的知识。<b>记忆的关键不是"记得多"，而是：写得准、取得到、忘得掉</b>——下一页。</p></div>
+</section>
+
+<!-- P43 记忆生命周期 -->
+<section class="slide">
+  <div class="kicker">CH5 · 记忆与知识 2/6</div>
+  <h1 class="tt">记忆的形态与生命周期：<span class="acc">准、取得到、忘得掉</span></h1>
+  <p class="sub">一份记不住的记忆等于没有；一份过期的记忆比没有更糟</p>
+  <div class="flow mb" style="gap:6px">
+    <div class="fbox"><b>01 采集</b><small>从真实动作取：决策/失败/约定</small></div>
+    <div class="farr">→</div>
+    <div class="fbox"><b>02 结构化</b><small>一条=一个事实+来源+时间</small></div>
+    <div class="farr">→</div>
+    <div class="fbox"><b>03 索引</b><small>字面+向量+元数据</small></div>
+    <div class="farr">→</div>
+    <div class="fbox"><b>04 召回</b><small>按任务相关性取 top-k</small></div>
+    <div class="farr">→</div>
+    <div class="fbox"><b>05 反馈</b><small>被用到/用错了 → 记分</small></div>
+    <div class="farr">→</div>
+    <div class="fbox"><b>06 更新/遗忘</b><small>过期/被推翻 → 下架</small></div>
+  </div>
+  <div class="row" style="flex:1">
+    <div style="flex:1">
+      <div class="card acc mb"><h3>写什么：三类高价值</h3>
+        <ul class="ls"><li class="small"><b>事实</b>：版本、环境、接口约定、禁用清单</li><li class="small"><b>决策</b>：选了什么、为什么、否决了什么</li><li class="small"><b>偏好</b>：命名风格、提交规范、测试习惯</li></ul></div>
+      <div class="card warn"><h3>反模式：记忆当垃圾桶</h3>
+        <p class="small">召回一堆过程、没有结论——检索时噪音淹没信号。<b>每条记忆必须能回答"这条错了会造成什么"</b>。</p></div>
+    </div>
+    <div style="flex:1">
+      <pre class="term" style="font-size:12px;height:100%"><span class="c"># 一条好的记忆（结构化）</span>
+id:   dec-2026-11-17-01
+kind: decision
+scope: repo/orders-service
+fact: 订单重试统一用指数退避
+      （max 3 次，基准 2s）
+why:  固定间隔撞上下游限流
+      （incident #881）
+src:  PR #512 review 结论
+date: 2026-11-17
+ttl:  至限流策略变更时复审
+<span class="g">→ 来源可查 · 理由可追溯 · 有复审条件</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- P44 CLAUDE.md 实践 -->
+<section class="slide">
+  <div class="kicker">CH5 · 记忆与知识 3/6</div>
+  <h1 class="tt">项目记忆文件：<span class="acc">AGENTS.md / CLAUDE.md</span> 写什么、不写什么</h1>
+  <div class="half">
+    <div style="flex:1.1">
+      <div class="card ok mb"><h3>该写（稳定 · 可执行 · 机器可判）</h3>
+        <ul class="ls okc">
+          <li>构建/测试/部署命令——它最常用的三条</li>
+          <li>架构地图：模块边界、依赖方向、公共入口</li>
+          <li>禁区：不能动的模块、必须双人复核的文件</li>
+          <li>踩过的坑："必须用 X 因为 Y"、"Z 已废弃勿用"</li>
+          <li>版本清单 + 今天的日期（治顽疾②）</li>
+        </ul></div>
+      <div class="card warn"><h3>不该写（三类反模式）</h3>
+        <ul class="ls warnc">
+          <li>大段业务文档 → 占常驻税，稀释一切</li>
+          <li>频繁变化的状态（当前进度）→ 进会话记忆/进度文件</li>
+          <li>愿望清单（"将来要重构"）→ 会被当现行规范执行</li>
+        </ul></div>
+      <div class="card gray mt"><p class="small">经验值：<b>≤100 行</b>、全命令化、每条可判对错。超过 200 行遵循率反而下降。改动进 code review——"给 AI 的规范"同时是给新人的文档。</p></div>
+    </div>
+    <div style="flex:1">
+      <pre class="term" style="font-size:11.5px;height:100%"># AGENTS.md — 订单服务
+<span class="c">（今天 2026-11-19，知识可能过期，
+  涉及版本先核实 package.json）</span>
+
+<span class="o">## 命令</span>
+make test / make test-one M=order / make lint
+
+<span class="o">## 架构</span>
+api/ → service/ → repo/，禁止跨层
+写操作必须走 repo 层（审计依赖）
+改 pkg/ 公共接口前全库 grep 调用方
+
+<span class="o">## 版本与废弃</span>
+react 19.2 · pydantic 2.11 · vitest 3
+禁用：useEffect 旧依赖写法 · class Config
+
+<span class="o">## 禁区</span>
+billing/ 计费逻辑 → 需负责人确认
+migrations/ 只增不改已发布文件
+
+<span class="o">## 坑</span>
+v2 分页参数是 cursor 不是 page
+容器时区 UTC，本机 CST——测试别用本地时间</pre>
+    </div>
+  </div>
+</section>
+
+<!-- P45 团队知识库 -->
+<section class="slide">
+  <div class="kicker">CH5 · 记忆与知识 4/6</div>
+  <h1 class="tt">团队知识库：<span class="acc">最好的知识库就是你的代码库</span></h1>
+  <p class="sub">不用另建一套系统——四个现成渠道，按优先级接入 Harness</p>
+  <div style="display:flex;flex-direction:column;gap:9px;flex:1">
+    <div class="card acc"><h3><span class="mono acc">01</span> 代码检索 <span class="small" style="font-weight:400">grep / 语义检索 / MCP 工具化</span></h3>
+      <p class="small">最权威、最新鲜的"知识库"。<b>结论写代码里不如让代码可检索</b>：接口即事实，实现即文档。让 Agent 先查再写。</p></div>
+    <div class="card acc"><h3><span class="mono acc">02</span> 文档体系 <span class="small" style="font-weight:400">docs/ · ADR · 架构地图</span></h3>
+      <p class="small">决策记录（ADR）回答"为什么这么设计"；与代码同分支演进，过时会随着 PR 被发现。<b>宁可短、宁可少，不要长而失真</b>。</p></div>
+    <div class="card acc"><h3><span class="mono acc">03</span> 案例检索 <span class="small" style="font-weight:400">历史 incident / 复盘</span></h3>
+      <p class="small">新任务的最好参照是"上次类似的事故"。结构化存：现象/根因/修复/验证。<b>这正是 P43 记忆条目的组织库</b>。</p></div>
+    <div class="card acc"><h3><span class="mono acc">04</span> RAG <span class="small" style="font-weight:400">语义检索按需注入</span></h3>
+      <p class="small">当文档量超过常驻层承载（数百页级）时上 RAG。两个前置检查：<b>切片粒度（先人工验证召回质量）与索引新鲜度（更新进 CI）</b>。不满足就先用 grep + 文件引用。</p></div>
+  </div>
+  <div class="card gray mt"><p class="small">分工口诀：<b>高频约定进 AGENTS.md（常驻），海量文档走检索（按需），个人教训进记忆（跨会话），团队共识进 ADR（随仓库）。</b></p></div>
+</section>
+
+<!-- P46 组合拳 -->
+<section class="slide">
+  <div class="kicker">CH5 · 记忆与知识 5/6</div>
+  <h1 class="tt">组合拳：七顽疾 × 记忆/知识</h1>
+  <p class="sub">记忆不是"第七个对策"，是前七个对策的<b>共同底座</b></p>
+  <table class="t" style="font-size:13px;flex:1">
+    <tr><th style="width:150px">顽疾</th><th>记忆/知识侧的对策</th><th style="width:230px">落点</th></tr>
+    <tr><td><b>① 幻觉</b></td><td class="small">知识库登记"可用 API 清单 + 禁用清单"，检索优先于记忆</td><td class="small">知识 03 · 检索 01</td></tr>
+    <tr><td><b>② 知识过期</b></td><td class="small">版本化知识条目随依赖升级同步更新（PR 内顺手改）</td><td class="small">知识 03 · 记忆 06 遗忘</td></tr>
+    <tr><td><b>③ 目标漂移</b></td><td class="small">任务卡常驻 + 历史决策可查（"上次为什么否决了方案 B"）</td><td class="small">记忆 04 召回</td></tr>
+    <tr><td><b>④ 长任务失忆</b></td><td class="small">阶段交接摘要落盘 + 决策日志 + 可检索历史</td><td class="small">记忆 01/02/06</td></tr>
+    <tr><td><b>⑤ 不可控改动</b></td><td class="small">禁区清单进常驻层；权限策略文件随仓库</td><td class="small">知识 03 · 常驻层</td></tr>
+    <tr><td><b>⑥ 结果难验证</b></td><td class="small">验收清单与历史 first-pass 率沉淀，复核时取用</td><td class="small">记忆 05 反馈</td></tr>
+    <tr><td><b>⑦ 成本延迟</b></td><td class="small">任务分级路由表 + 缓存友好排列进装配规范</td><td class="small">装配三层（P40）</td></tr>
+  </table>
+  <div class="card ok mt"><p><b>一句话：上下文决定"此刻看得见什么"，记忆决定"跨 session 记得什么"，知识决定"团队级什么是对的"。</b>三层各治一段失忆，缺一层就漏一类顽疾。</p></div>
+</section>
+
+<!-- P47 七段管道 -->
+<section class="slide">
+  <div class="kicker">CH5 · 收束</div>
+  <h1 class="tt">一个 Harness 的参考架构：<span class="acc">七段管道</span></h1>
+  <p class="sub">把全部零件串起来。两条回流：验证失败回到模型（保证正确），记忆写入回到装配（保证越来越准）</p>
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:7px;align-items:stretch">
+    <div class="card acc"><h3 class="small mono acc">01</h3><p style="font-size:13.5px;font-weight:600">目标解析</p><p class="small">需求 → 任务卡：目标/约束/验收</p></div>
+    <div class="card acc"><h3 class="small mono acc">02</h3><p style="font-size:13.5px;font-weight:600">上下文装配</p><p class="small">常驻+场景+临时三层</p></div>
+    <div class="card acc"><h3 class="small mono acc">03</h3><p style="font-size:13.5px;font-weight:600">检索</p><p class="small">代码/文档/记忆/案例</p></div>
+    <div class="card acc"><h3 class="small mono acc">04</h3><p style="font-size:13.5px;font-weight:600">模型调用</p><p class="small">档位路由+预算闸门</p></div>
+    <div class="card acc"><h3 class="small mono acc">05</h3><p style="font-size:13.5px;font-weight:600">工具执行</p><p class="small">沙箱+权限三档</p></div>
+    <div class="card acc"><h3 class="small mono acc">06</h3><p style="font-size:13.5px;font-weight:600">验证</p><p class="small">lint/类型/测试/构建</p></div>
+    <div class="card acc"><h3 class="small mono acc">07</h3><p style="font-size:13.5px;font-weight:600">记忆观测</p><p class="small">写决策、留 trace、可回放</p></div>
+  </div>
+  <svg viewBox="0 0 860 60" style="width:100%;margin-top:8px">
+    <path d="M 780 8 L 780 40 L 640 40" fill="none" stroke="#C0452F" stroke-width="2.5" marker-end="url(#r1)"/>
+    <text x="700" y="55" font-size="12" fill="#C0452F" text-anchor="middle">验证失败回流 06→04</text>
+    <path d="M 80 52 L 80 40 L 40 40" fill="none" stroke="#4A7C59" stroke-width="2.5" marker-end="url(#r2)"/>
+    <text x="190" y="55" font-size="12" fill="#4A7C59">记忆写入回流 07→02</text>
+    <defs><marker id="r1" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#C0452F"/></marker><marker id="r2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#4A7C59"/></marker></defs>
+  </svg>
+  <div class="card gray mt"><p class="small">trace 示例（06 验证观测段的产物）：每次任务留全程记录——读了什么、改了什么、每步 token 与耗时。<b>可回放是审计与复盘的前提</b>（顽疾⑤⑥ 的证据链）。</p></div>
+</section>
+
+<!-- P48 CH6章节页 -->
+<section class="slide sec">
+  <div class="cn">06</div>
+  <h1>评估与落地</h1>
+  <p class="sub" style="font-size:17px">不能度量就不能改进——以及落地时的坑</p>
+  <div class="qs" style="width:660px">
+    <div class="q"><span class="n">Q1</span>五组指标，判断你的 Harness 是否在变好（P49）</div>
+    <div class="q"><span class="n">Q2</span>30/60/90 天路线图，每阶段的验收物（P50）</div>
+    <div class="q"><span class="n">Q3</span>十条反模式 + 明天能用的 12 条速查（P51-52）</div>
+  </div>
+</section>
+
+<!-- P49 评估 -->
+<section class="slide">
+  <div class="kicker">CH6 · 评估与落地 1/4</div>
+  <h1 class="tt">如何评估你的 Harness：<span class="acc">不能度量就不能改进</span></h1>
+  <div class="grid2" style="flex:1">
+    <div class="card ok"><h3><span class="tag g">质量</span> 正确性</h3>
+      <p class="small mono">首次通过率 first-pass · 返工率 · 引用可打开率 · 约束违反次数</p>
+      <p class="small mt">口径：以"验收清单全绿"计数，不用"感觉变好了"。<b>基线先测一周再改配置</b>，否则无法归因。</p></div>
+    <div class="card ok"><h3><span class="tag g">效率</span> 速度</h3>
+      <p class="small mono">每任务轮次 · 墙钟时长 · 人工介入次数 · 无效重试率</p>
+      <p class="small mt">轮次上升往往先于质量下降——<b>轮次是稀释的先行指标</b>（P37）。</p></div>
+    <div class="card ok"><h3><span class="tag g">成本</span> 花费</h3>
+      <p class="small mono">每通过任务 $ · 缓存命中率 · 档位分布</p>
+      <p class="small mt">对照 P13 的榜单口径：同 Index 不同价差 3 倍，<b>你的组合也该算这笔账</b>。</p></div>
+    <div class="card ok"><h3><span class="tag g">安全</span> 护栏</h3>
+      <p class="small mono">被拒绝动作数 · 回滚次数 · 高危人工确认率 · 事故数</p>
+      <p class="small mt">被拒绝动作数异常升高 = 策略太松或模型越界；<b>两个数都要看趋势而不是绝对值</b>。</p></div>
+  </div>
+  <div class="card acc mt"><p><b>周报模板一行版：</b>本周 first-pass __%，每通过任务 $__，回滚 __ 次，约束违反 __ 次——四个数字贴在群公告里，比十页总结有用。</p></div>
+</section>
+
+<!-- P50 路线图 -->
+<section class="slide">
+  <div class="kicker">CH6 · 评估与落地 2/4</div>
+  <h1 class="tt">落地路线图：<span class="acc">30 / 60 / 90 天</span></h1>
+  <div class="grid3" style="flex:1">
+    <div class="card acc"><h3>30 天 · 打地基</h3>
+      <ul class="ls"><li class="small">AGENTS.md ≤100 行（命令/架构/禁区/坑）</li>
+        <li class="small">任务卡模板进团队规范（P28）</li>
+        <li class="small">权限三档 + 分支隔离（P30）</li>
+        <li class="small">验收清单接进每张任务卡（P31）</li></ul>
+      <p class="small mt okc"><b>验收物</b>：所有 AI 任务有卡、有清单、可回滚</p></div>
+    <div class="card acc"><h3>60 天 · 装回路</h3>
+      <ul class="ls"><li class="small">验证回路：lint/tsc/test 全进观察信号</li>
+        <li class="small">压缩 SOP：60-70% 触发 + 保留清单（P38）</li>
+        <li class="small">记忆落盘：阶段交接摘要 + 决策日志（P43）</li>
+        <li class="small">四组指标开始记录（P49）</li></ul>
+      <p class="small mt okc"><b>验收物</b>：first-pass 与每任务 $ 有周趋势线</p></div>
+    <div class="card ok"><h3>90 天 · 成体系</h3>
+      <ul class="ls"><li class="small">知识库接入：ADR + 案例检索（P45）</li>
+        <li class="small">档位路由与预算闸门（P32）</li>
+        <li class="small">七段管道对齐自查（P47）</li>
+        <li class="small">反模式清单季度巡检（P51）</li></ul>
+      <p class="small mt okc"><b>验收物</b>：新人+AI 第一天达到团队 80% 水准</p></div>
+  </div>
+  <div class="card gray mt"><p class="small">节奏建议：<b>先约束后自动化</b>——权限和验收没立起来之前，别追求"全自动"；那不是提效，是加速事故。</p></div>
+</section>
+
+<!-- P51 反模式 -->
+<section class="slide">
+  <div class="kicker">CH6 · 评估与落地 3/4</div>
+  <h1 class="tt">常见反模式：看起来在努力，<span class="warnc">其实在埋雷</span></h1>
+  <table class="t" style="font-size:12.5px;flex:1">
+    <tr><th style="width:215px">反模式</th><th>为什么错</th><th style="width:250px">替代做法</th></tr>
+    <tr><td>✗ 把整个仓库塞进上下文</td><td class="small">稀释 + 昂贵 + 中段遗忘</td><td class="small okc">检索优先精选进入；工具输出先摘要</td></tr>
+    <tr><td>✗ "通过测试 = 正确"</td><td class="small">测试本身也可能不全</td><td class="small okc">测试即规格 + 独立复核 + 人工清单</td></tr>
+    <tr><td>✗ 迷信单一模型/单点榜单</td><td class="small">任务差异 + 档位差异（P12）</td><td class="small okc">看区间、看成本、按任务选</td></tr>
+    <tr><td>✗ 不设权限追求"全自动"</td><td class="small">一次误删就是事故（P30）</td><td class="small okc">三档闸门 + 可回滚 + 高危转人工</td></tr>
+    <tr><td>✗ 没有验收标准就开工</td><td class="small">目标漂移是必然（P28）</td><td class="small okc">规格先行：改什么/不改什么/怎么验收</td></tr>
+    <tr><td>✗ 只压缩不落盘</td><td class="small">有损压缩 → 自信的错误（P39）</td><td class="small okc">结论先落盘，过程才允许压缩</td></tr>
+    <tr><td>✗ 把记忆当"垃圾桶"</td><td class="small">召回一堆过程，没有结论</td><td class="small okc">一条记忆 = 一个事实 + 来源 + 时间</td></tr>
+    <tr><td>✗ 只凭感觉判断"变好了"</td><td class="small">无法归因，无法证明</td><td class="small okc">first-pass 率 + 每通过任务花费（P49）</td></tr>
+    <tr><td>✗ 一次性长提示词包打天下</td><td class="small">规则越多越被稀释，且无法复用</td><td class="small okc">分层装配：常驻层短、场景层按需（P40）</td></tr>
+    <tr><td>✗ 把 Agent 当"更快的打字员"</td><td class="small">只派写代码的活，浪费规划与验证能力</td><td class="small okc">让它做任务卡、跑验证、写交接（P47）</td></tr>
+  </table>
+</section>
+
+<!-- P52 速查 -->
+<style>.slide:nth-of-type(52) .card{display:flex;flex-direction:column;justify-content:center}</style>
+<section class="slide">
+  <div class="kicker">CH6 · 评估与落地 4/4</div>
+  <h1 class="tt">一页速查：明天就能用的 12 条</h1>
+  <div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr 1fr;gap:10px">
+    <div class="card acc"><p style="font-size:13.5px"><b>01 任务卡四行</b><br><span class="small">目标/范围/不动/验收命令——没有卡不开工</span></p></div>
+    <div class="card acc"><p style="font-size:13.5px"><b>02 常驻层≤几十行</b><br><span class="small">规则越多越稀释；AGENTS.md 别超 100 行</span></p></div>
+    <div class="card acc"><p style="font-size:13.5px"><b>03 先查再写</b><br><span class="small">API 签名不确定就查源码/文档，不许猜</span></p></div>
+    <div class="card acc"><p style="font-size:13.5px"><b>04 完成条件=命令</b><br><span class="small">"pnpm test orders 全绿"，不是"看起来对"</span></p></div>
+    <div class="card acc"><p style="font-size:13.5px"><b>05 三档权限</b><br><span class="small">只读放行 · 写入受限 · 高危转人工；先分支后动手</span></p></div>
+    <div class="card acc"><p style="font-size:13.5px"><b>06 红线三条</b><br><span class="small">密钥/生产凭据/用户数据外发——永不自动执行</span></p></div>
+    <div class="card acc"><p style="font-size:13.5px"><b>07 占用 60-70% 压缩</b><br><span class="small">压缩前给保留清单；压缩后跑测试验证</span></p></div>
+    <div class="card acc"><p style="font-size:13.5px"><b>08 结论落盘</b><br><span class="small">交接摘要：目标/已完成/约束/下一步/坑</span></p></div>
+    <div class="card acc"><p style="font-size:13.5px"><b>09 关键约束双锚点</b><br><span class="small">开头 + 当前轮各出现一次，别埋中段</span></p></div>
+    <div class="card acc"><p style="font-size:13.5px"><b>10 测试即规格</b><br><span class="small">先红后绿；首轮就绿要怀疑测试没测到</span></p></div>
+    <div class="card acc"><p style="font-size:13.5px"><b>11 四个数字周看</b><br><span class="small">first-pass / 每通过任务 $ / 回滚 / 约束违反</span></p></div>
+    <div class="card ok"><p style="font-size:13.5px"><b>12 "未确认"合法</b><br><span class="small">系统提示里允许它说不知道并说明查了什么</span></p></div>
+  </div>
+</section>
+
+<!-- P53 收束 -->
+<section class="slide">
+  <div class="kicker">尾声 · 收束</div>
+  <h1 class="tt">三句话，带走整场课</h1>
+  <div class="row mb" style="flex:1">
+    <div class="card acc" style="flex:1"><h3><span class="mono acc">01</span> 大模型是一台只会预测下一个词的概率机器</h3>
+      <p class="small">它的强项（流畅、泛化）与弱点（幻觉、过期、失忆）来自同一件事——<b>这不是 bug，是本性</b>。对策只能工程化，不能许愿。</p></div>
+    <div class="card acc" style="flex:1"><h3><span class="mono acc">02</span> Harness 是把机器接进真实工程的那套马具</h3>
+      <p class="small">六大件（装配/工具/沙箱/记忆/验证/观测）<b>没有一件让模型更聪明</b>，都在补结构性漏洞。七顽疾 → 五零件，一张台账管完。</p></div>
+    <div class="card ok" style="flex:1"><h3><span class="mono acc">03</span> 生产力 = 约束得多好 × 记得多牢</h3>
+      <p class="small">约束靠权限、验证、任务卡；记忆靠落盘、检索、版本化。<b>这两件事都不在提示词里，在你的工程里。</b></p></div>
+  </div>
+  <pre class="term" style="font-size:12px">~/your-repo $ cat AGENTS.md
+<span class="g"># 铁律</span>
+- 不确定就查，不许猜 API 签名
+- 改之前先写验收命令
+- 不许动 .env / ci/** / 错误基类
+- 结论写进 progress.md，过程可以丢</pre>
+  <div class="row mt">
+    <div class="card gray" style="flex:1.4"><h3 class="small">资料来源</h3>
+      <p class="small">① Artificial Analysis · AA-3D Methodology / Leaderboard · artificialanalysis.ai · 抓取 2026-11-18<br>
+      ② Artificial Analysis · Coding Agent Benchmarks（Index v2.1 + 成本口径）· 抓取 2026-11-18<br>
+      ③ Liu et al. · Lost in the Middle（2023）· ④ Anthropic · 2026 Agentic Coding Trends Report<br>
+      ⑤ Karpathy · vibe coding（2025）· ⑥ 各工具官方文档（Claude Code / Codex / OpenCode）</p></div>
+    <div class="card gray" style="flex:1"><h3 class="small">数据声明</h3>
+      <p class="small">榜单与成本为当日快照，数值取整；置信区间见 P11。评测口径可能随版本调整，引用时请核对抓取日。Q&amp;A。</p></div>
+  </div>
+</section>
+
+</div><!-- /stage -->
+
+<div id="chrome-bottom">
+  <div id="deckname">Harness 工程 · 从概率机器到可靠交付 · 2026-11</div>
+  <div id="pg">1 / 53</div>
+  <div id="bar" style="width:2%"></div>
+</div>
+
+<div id="toc" style="position:absolute;inset:0;background:rgba(31,30,30,.92);display:none;z-index:50;padding:60px 90px;overflow:auto">
+  <div style="color:#F5F1E8;font-size:14px;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;margin-bottom:14px">CONTENTS · 点击跳转 · 按 T 或 Esc 关闭</div>
+</div>
+
+<script>
+// AA-3D 榜单数据（Artificial Analysis · 2026-11-18 抓取）
+const LB=[
+[1,"GPT-6.2 Astra","Max",96.24,92.59,7.29,1318],[2,"Claude Fable 5.2","Max",90.71,87.65,6.12,1271],
+[3,"GPT-6.2 Sol","Max",89.29,86.00,6.59,1259],[4,"Claude Sonnet 5.5","Max",82.82,79.53,6.59,1204],
+[5,"Claude Opus 5.5","Max",82.59,79.29,6.59,1202],[6,"GPT-6 Astra","Max",78.59,75.29,6.59,1168],
+[7,"Gemini 4 Argon","High",76.12,72.59,7.06,1147],[8,"Claude Fable 5.1","回退",75.18,71.88,6.59,1139],
+[9,"GPT-6 Sol","Max",74.24,71.06,6.35,1131],[10,"GPT-6.1 Sol","Max",73.06,69.76,6.59,1121],
+[11,"Kimi K3.1 Pro","",72.00,68.59,6.82,1112],[12,"Muse Spark 1.3","Max",62.59,59.41,6.35,1032],
+[13,"Inkling 2 Small","",62.00,57.65,8.71,1027],[14,"GPT-6 Luna","Max",58.82,null,null,1000],
+[15,"Claude Haiku 5.5","Max",58.59,55.41,6.35,998],[16,"Grok 4.7","XHigh",57.88,54.71,6.35,992],
+[17,"Kimi K3","Max",56.94,53.65,6.59,984],[18,"MiMo-V2.6-Pro","",56.82,53.65,6.35,983],
+[19,"Gemini 3.8 Flash","High",55.76,52.59,6.35,974],[20,"Qwen3.8 Max","0902",53.41,50.24,6.35,954],
+[21,"GLM-5.3-Flash","",51.41,48.24,6.35,937],[22,"Mistral Large 4 P.","",44.94,41.76,6.35,882],
+[23,"Step 5 Preview","",42.24,38.94,6.59,859],[24,"GLM-5.3","Max",34.59,31.06,7.06,794],
+[25,"MiniMax-M3","",28.94,25.53,6.82,746],[26,"Inkling","XHigh",10.71,6.47,8.47,591],
+[27,"Nemotron 3 Ultra 550B","",9.76,5.18,9.18,583]];
+function renderLB(){
+  const mk=r=>`<div class="barrow${r[0]>13?' lo':''}${r[0]<=3?' top':''}"><div class="lbl"><span class="rk">${String(r[0]).padStart(2,'0')}</span>${r[1]}<span class="cfg">${r[2]}</span></div><div class="track"><div class="fill" style="width:${r[3]}%"></div>${r[4]!==null?`<div class="ci" style="left:${r[4]}%;width:${r[5]}%"></div>`:''}</div><div class="val">${r[6]}</div></div>`;
+  const a=document.getElementById('lb1'),b=document.getElementById('lb2');
+  if(a){a.innerHTML=LB.slice(0,14).map(mk).join('')+'<div class="axis"><span>500</span><span>Elo</span><span>1350</span></div>';}
+  if(b){b.innerHTML=LB.slice(14).map(mk).join('')+'<div class="axis"><span>500</span><span>Elo</span><span>1350</span></div>';}
+}
+renderLB();
+
+const slides=[...document.querySelectorAll('.slide')];
+const tocData=[["封面",0],["导读+目录",1],
+["CH1 大脑怎么想：概率与榜单",2],["· 三块基石 Token/上下文/参数",3],["· 它在续写不是查答案",4],["· temperature=胆量",5],["· 四个性格缺陷",6],["· 无记忆 lost-in-middle",7],["· 知识冻结",8],["· Elo 与 AA-3D 是什么",9],["· AA-3D 榜单 27 模型",10],["· 同模型档位差距",11],["· Coding Agent Index",12],
+["CH2 Vibe → Harness",13],["· 时间线 人的角色",14],["· Vibe 红利",15],["· 原型↔生产五道坎",16],["· Agent 四要素",17],["· Agent 四丢分点",18],["· Harness 不是比喻",19],["· 六大件",20],["· 主流 Harness 对比",21],["· 放大效应",22],
+["CH3 七顽疾 × 对策",23],["· 顽疾全景",24],["· ①幻觉",25],["· ②知识过期",26],["· ③目标漂移",27],["· ④长任务失忆",28],["· ⑤不可控改动",29],["· ⑥结果难验证",30],["· ⑦成本延迟",31],["· 对策总表一",32],["· 对策总表二",33],
+["CH4 上下文工程",34],["· 七块拼图",35],["· 稀释全过程",36],["· 压缩四手段",37],["· 摘要≠事实",38],["· 三层装配+四原则",39],
+["CH5 记忆与知识库",40],["· 三层分工",41],["· 记忆生命周期",42],["· AGENTS.md 实践",43],["· 团队知识库",44],["· 组合拳",45],["· 七段管道",46],
+["CH6 评估与落地",47],["· 五组指标",48],["· 30/60/90",49],["· 反模式",50],["· 速查 12 条",51],
+["收束：三句话",52]];
+let cur=0;
+function show(n){cur=Math.max(0,Math.min(slides.length-1,n));
+  slides.forEach((s,k)=>s.classList.toggle('active',k===cur));
+  document.getElementById('pg').textContent=(cur+1)+' / '+slides.length;
+  document.getElementById('bar').style.width=((cur+1)/slides.length*100)+'%';}
+function scale(){const s=Math.min(innerWidth/1280,innerHeight/720);
+  document.getElementById('stage').style.transform=`translate(-50%,-50%) scale(${s})`;}
+addEventListener('resize',scale);
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();show(cur+1);}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();show(cur-1);}
+  else if(e.key==='Home')show(0);
+  else if(e.key==='End')show(slides.length-1);
+  else if(e.key==='t'||e.key==='T')toggleTOC();
+  else if(e.key==='Escape')toggleTOC(false);
+});
+document.getElementById('stage').addEventListener('click',e=>{
+  const x=e.clientX/innerWidth;
+  if(x>0.66)show(cur+1);else if(x<0.33)show(cur-1);
+});
+const toc=document.getElementById('toc');
+tocData.forEach(([name,idx])=>{
+  const d=document.createElement('div');
+  d.textContent=(idx+1).toString().padStart(2,'0')+'  '+name;
+  d.style.cssText='color:#F5F1E8;padding:6px 4px;font-size:15px;cursor:pointer;border-bottom:1px solid rgba(245,241,232,.12)';
+  d.onmouseenter=()=>d.style.color='#D97757';d.onmouseleave=()=>d.style.color='#F5F1E8';
+  d.onclick=()=>{toggleTOC(false);show(idx);};
+  toc.appendChild(d);
+});
+function toggleTOC(force){toc.style.display=force===undefined?(toc.style.display==='none'?'block':'none'):(force?'block':'none');}
+scale();show(0);
+</script>
+</body>
+</html>
